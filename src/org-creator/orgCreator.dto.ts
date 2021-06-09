@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-export class OrgCreatorEventDto {
+export class ClaimRequestEventDto {
   @IsString()
   id: string;
 

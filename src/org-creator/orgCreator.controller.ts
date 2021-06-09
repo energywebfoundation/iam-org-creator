@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Controller, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import jwt_decode from 'jwt-decode';
+import * as jwt from 'jsonwebtoken';
 import { Logger } from '../logger/logger.service';
-import { OrgCreatorEventDto } from './orgCreator.dto';
+import { ClaimRequestEventDto } from './orgCreator.dto';
 import { IClaimToken } from './orgCreator.type';
 
 @Injectable()
+@Controller()
 export class OrgCreatorController {
   constructor(
     private configService: ConfigService,
@@ -16,15 +17,18 @@ export class OrgCreatorController {
   }
 
   @EventPattern('*.claim.exchange')
-  createOrg(@Payload() message: OrgCreatorEventDto) {
+  async createOrg(@Payload() message: ClaimRequestEventDto) {
     const { token } = message;
-    const { claimData }: IClaimToken = jwt_decode(token);
+    const {
+      payload: { claimData },
+    } = jwt.decode(token, { complete: true });
+
     const permittedEventRole = this.configService.get<string>(
       'PERMITTED_ORG_CREATOR_ROLE',
     );
-    if (claimData.claimType !== permittedEventRole) {
+    if (claimData?.claimType !== permittedEventRole) {
       this.logger.log(
-        `role found in orgCreator event is not permitted, exiting org creation process `,
+        `Role found in claim request event is not permitted, exiting org creation process.`,
       );
       return;
     }
