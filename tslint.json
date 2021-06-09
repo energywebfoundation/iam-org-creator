@@ -1,0 +1,54 @@
+{
+  "defaultSeverity": "error",
+  "extends": ["tslint:recommended"],
+  "linterOptions": {
+    "exclude": ["dist", "src/database/migrations/*"]
+  },
+  "jsRules": {
+    "no-unused-expression": true
+  },
+  "rules": {
+    "await-promise": true,
+    "ordered-imports": true,
+    "array-type": [false],
+    "curly": false,
+    "eofline": true,
+    "indent": [true, "spaces", 2],
+    "interface-name": [true],
+
+    "max-line-length": [
+      true,
+      {
+        "limit": 150,
+        "ignore-pattern": "^import |^export {(.*?)}|class [a-zA-Z]+ implements |//"
+      }
+    ],
+    "member-access": [false],
+    "member-ordering": [false],
+    "no-console": [true, "log", "info", "error", "warn"],
+    "no-empty": true,
+    "no-empty-interface": true,
+    "no-unused-expression": false,
+    "object-literal-key-quotes": [true, "as-needed"],
+    "object-literal-sort-keys": false,
+    "one-line": [
+      true,
+      "check-catch",
+      "check-finally",
+      "check-else",
+      "check-open-brace"
+    ],
+    "one-variable-per-declaration": [false],
+    "quotemark": [true, "single"],
+    "radix": false,
+    "semicolon": [true, "always"],
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-leading-underscore",
+      "allow-pascal-case"
+    ]
+  },
+  "rulesDirectory": []
+}
