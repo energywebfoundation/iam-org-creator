@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
+import { OrgCreatorModule } from './org-creator/orgCreator.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    OrgCreatorModule,
   ],
   controllers: [],
   providers: [],
