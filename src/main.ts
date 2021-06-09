@@ -1,14 +1,20 @@
 import { NestFactory } from '@nestjs/core';
-import { Transport } from '@nestjs/microservices';
+import { Transport,MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './module';
+import { ConfigService } from '@nestjs/config';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-async function bootstrap() {
-  const app = await NestFactory.createMicroservice(AppModule, {
+async function bootstrap() {  
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
     transport: Transport.NATS,
     options: {
-      url: 'nats://volta-identityevents-nats.energyweb.org:4222',
+      url: process.env.NATS_CLIENTS_URL,
     },
   });
-  app.listen(() => console.log('IamOrgCreator Service is now listening to NATS events..'));
+
+  const configService = app.get(ConfigService);
+  app.listen(() => console.log(`IamOrgCreator Service is now listening to NATS events on port: ${configService.get('NESTJS_PORT')}`));
 }
+
 bootstrap();
