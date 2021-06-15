@@ -6,4 +6,10 @@ export interface IClaimToken {
   sub: string;
 }
 
-export type ClaimData = { claimType: string; claimTypeVersion: string };
+export type ClaimData = {
+  fields: KeyValues[];
+  claimType: string;
+  claimTypeVersion: string;
+};
+
+export type KeyValues = { key: string; value: string };
