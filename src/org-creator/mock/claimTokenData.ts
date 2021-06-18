@@ -1,4 +1,10 @@
 export const claimTokenData = {
-  claimType: 'qwerty.role.orgcreator.apps.testorg.iam.ewc',
-  claimTypeVersion: '5.0.0',
+  fields: [
+    {
+      key: 'orgname',
+      value: 'mctesty',
+    },
+  ],
+  claimType: 'test.role.testy.apps.testorg.iam.ewc',
+  claimTypeVersion: '1.0.0',
 };

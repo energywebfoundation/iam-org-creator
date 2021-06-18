@@ -12,15 +12,12 @@ import { Logger } from '../logger/logger.service';
 @Injectable()
 export class IamService extends IAM {
   public _iam: IAM;
-  private rpcUrl;
-  private privateKey;
   constructor(configService: ConfigService, private readonly logger: Logger) {
     super({
       rpcUrl: configService.get<string>('RPC_URL'),
       privateKey: configService.get<string>('PRIVATE_KEY'),
     });
-    this.rpcUrl = configService.get<string>('RPC_URL');
-    this.privateKey = configService.get<string>('PRIVATE_KEY');
+
     const voltaChainId = configService.get<number>('VOLTA_CHAIN_ID');
 
     // Set Cache Server

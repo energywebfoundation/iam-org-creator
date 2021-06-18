@@ -29,7 +29,10 @@ describe('OrgCreatorService', () => {
     service = module.get<OrgCreatorService>(OrgCreatorService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  it('extractAddressFromDID(), should extract string from DIDString', () => {
+    const mockDidString = 'did:ethr:0x39579900f9d60819fd5521a9aC044a1B2a849DC6';
+    expect(service.extractAddressFromDID(mockDidString)).toBe(
+      mockDidString.split(':')[2],
+    );
   });
 });

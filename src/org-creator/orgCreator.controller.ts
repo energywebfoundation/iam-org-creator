@@ -1,24 +1,16 @@
-import {
-  BadRequestException,
-  Controller,
-  Injectable,
-  Post,
-  UseFilters,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { BadRequestException, Controller, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import { validate, ValidationError } from 'class-validator';
 import { ENSNamespaceTypes } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
-import { IamService } from 'src/iam/iam.service';
+import { IamService } from '../iam/iam.service';
 import { Logger } from '../logger/logger.service';
 import { ClaimRequestEventDto } from './orgCreator.dto';
 import { OrgCreatorService } from './orgCreator.service';
 import { IClaimToken } from './orgCreator.type';
 
 @Injectable()
+@Controller()
 export class OrgCreatorController {
   constructor(
     private configService: ConfigService,
@@ -30,7 +22,7 @@ export class OrgCreatorController {
   }
 
   @EventPattern('*.claim.exchange')
-  async createOrg(@Payload() message: ClaimRequestEventDto) {
+  async createOrg(@Payload() message: ClaimRequestEventDto): Promise<boolean> {
     const { token, requester, id, registrationTypes } = message;
 
     const { claimData } = jwt.decode(token) as IClaimToken;
@@ -96,5 +88,6 @@ export class OrgCreatorController {
     });
 
     this.logger.log('completed organisation creation process');
+    return true;
   }
 }
