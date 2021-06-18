@@ -1,22 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
-  DIDAttribute,
   IAM,
   MessagingMethod,
-  SafeIam,
   setCacheClientOptions,
   setChainConfig,
   setMessagingOptions,
-  WalletProvider,
 } from 'iam-client-lib';
+import { Logger } from '../logger/logger.service';
 
 @Injectable()
 export class IamService extends IAM {
   public _iam: IAM;
   private rpcUrl;
   private privateKey;
-  constructor(configService: ConfigService) {
+  constructor(configService: ConfigService, private readonly logger: Logger) {
     super({
       rpcUrl: configService.get<string>('RPC_URL'),
       privateKey: configService.get<string>('PRIVATE_KEY'),
@@ -44,7 +42,9 @@ export class IamService extends IAM {
   }
 
   async initializeIAM() {
-    const { did, connected } = await this.initializeConnection({});
-    console.log(true);
+    const { connected } = await this.initializeConnection({});
+    if (connected) {
+      this.logger.info('successfully connected..');
+    }
   }
 }

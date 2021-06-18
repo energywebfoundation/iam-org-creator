@@ -2,6 +2,7 @@ import { INestApplication, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { Chance } from 'chance';
+import { RegistrationTypes } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { claimTokenData } from './mock/claimTokenData';
 import { OrgCreatorController } from './orgCreator.controller';
@@ -23,7 +24,7 @@ const MockLogger = {
 };
 const MockConfigService = {
   get: jest.fn((key: string) => {
-    if (key === 'PERMITTED_ORG_CREATOR_ROLE') {
+    if (key === 'REQUEST_NEW_ORG_ROLE') {
       return claimTokenData.claimType;
     }
     return null;
@@ -64,6 +65,7 @@ describe('NATS transport', () => {
         token: 'qwerty',
         claimIssuer: [chance.string()],
         requester: chance.string(),
+        registrationTypes: [RegistrationTypes.OnChain],
       };
       const request = await controller.createOrg(mockClaimRequest);
       expect(jwt.decode).toHaveBeenCalled();
@@ -80,6 +82,7 @@ describe('NATS transport', () => {
         token: 'qwerty',
         claimIssuer: [chance.string()],
         requester: chance.string(),
+        registrationTypes: [RegistrationTypes.OnChain],
       };
       await controller.createOrg(mockClaimRequest);
       expect(MockLogger.log).toHaveBeenCalledTimes(1);

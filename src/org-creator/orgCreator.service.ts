@@ -10,4 +10,8 @@ export class OrgCreatorService {
   ) {
     this.logger.setContext(OrgCreatorService.name);
   }
+
+  extractAddressFromDID(didString: string): string {
+    return didString.split(':')[2];
+  }
 }

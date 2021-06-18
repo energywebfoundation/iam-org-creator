@@ -1,4 +1,6 @@
 import { IsString } from 'class-validator';
+import { RegistrationTypes } from 'iam-client-lib';
+
 export class ClaimRequestEventDto {
   @IsString()
   id: string;
@@ -11,4 +13,7 @@ export class ClaimRequestEventDto {
 
   @IsString()
   requester: string;
+
+  @IsString({ each: true })
+  registrationTypes: RegistrationTypes[];
 }
