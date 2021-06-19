@@ -10,14 +10,4 @@ export class OrgCreatorService {
   extractAddressFromDID(didString: string): string {
     return didString.split(':')[2];
   }
-
-  // isClaimsCreateRequest(claimsCreationRequestObject, requestObject) {
-  //   const claimsCreationRequestKeys = Object.keys(claimsCreationRequestObject);
-  //   const requestKeys = Object.keys(requestObject);
-
-  //   if (claimsCreationRequestKeys.length !== requestKeys.length) {
-  //     return false;
-  //   }
-  //   return true;
-  // }
 }

@@ -108,7 +108,6 @@ describe('OrgCreatorController ', () => {
     });
 
     await app.startAllMicroservicesAsync();
-    // app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
     client = app.get('NATS_SERVICE');
