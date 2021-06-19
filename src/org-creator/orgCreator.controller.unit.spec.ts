@@ -5,7 +5,8 @@ import { Chance } from 'chance';
 import { ENSNamespaceTypes, RegistrationTypes } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { IamService } from '../iam/iam.service';
-import { claimTokenData } from './mock/claimTokenData';
+import { claimTokenData } from './mock/mock-data';
+import { createClaimRequest } from './mock/mock-data';
 import { OrgCreatorController } from './orgCreator.controller';
 import { OrgCreatorService } from './orgCreator.service';
 
@@ -20,6 +21,7 @@ jest.mock('jsonwebtoken', () => ({
 const chance = new Chance();
 const MockLogger = {
   log: jest.fn(),
+  error: jest.fn(),
   setContext: jest.fn(),
 };
 const MockConfigService = {
@@ -89,21 +91,14 @@ describe('NATS transport', () => {
 
   describe('createOrg() event', () => {
     it(`createOrg() should recieve claim request event and process it `, async () => {
-      const mockClaimRequest = {
-        id: chance.string(),
-        token: 'qwerty',
-        claimIssuer: [mockIssuerDID],
-        requester: mockRequesterDID,
-        registrationTypes: [RegistrationTypes.OnChain],
-      };
-      const request = await controller.createOrg(mockClaimRequest);
+      const request = await controller.createOrg(createClaimRequest);
       const orgNameSpace = config.get('ORG_NAMESPACE');
 
-      expect(jwt.decode).toHaveBeenCalledWith(mockClaimRequest.token);
+      expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
       expect(MockIamService.initializeIAM).toHaveBeenCalled();
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
         type: ENSNamespaceTypes.Organization,
-        owner: mockClaimRequest.requester.split(':')[2],
+        owner: createClaimRequest.requester.split(':')[2],
       });
       expect(MockIamService.createOrganization).toHaveBeenCalledWith({
         orgName: claimTokenData.fields[0].value,
@@ -113,73 +108,55 @@ describe('NATS transport', () => {
         namespace: orgNameSpace,
       });
       expect(MockIamService.changeOrgOwnership).toHaveBeenCalledWith({
-        newOwner: mockRequesterDID.split(':')[2],
+        newOwner: createClaimRequest.requester.split(':')[2],
         namespace: `${claimTokenData.fields[0].value}.${orgNameSpace}`,
       });
-      delete mockClaimRequest.claimIssuer;
-      expect(MockIamService.issueClaimRequest).toHaveBeenCalledWith({
-        ...mockClaimRequest,
-        ...{ subjectAgreement: '' },
-      });
+      expect(MockIamService.issueClaimRequest).toHaveBeenCalled();
       expect(request).toBe(true);
     });
 
     it(`createOrg() should throw an error if user already has existing org `, async () => {
-      const mockClaimRequest = {
-        id: chance.string(),
-        token: 'qwerty',
-        claimIssuer: [mockIssuerDID],
-        requester: mockRequesterDID,
-        registrationTypes: [RegistrationTypes.OnChain],
-      };
-
       MockIamService.getENSTypesByOwner = jest
         .fn()
         .mockResolvedValueOnce([{ name: 'org' }]);
-      const request = await expect(
-        controller.createOrg(mockClaimRequest),
-      ).rejects.toThrowError(
-        'User already has organisation created.. exiting org creation process',
-      );
+      await expect(
+        controller.createOrg(createClaimRequest),
+      ).rejects.toThrowError('User already has organisation created.');
 
       expect(jwt.decode).toHaveBeenCalled();
-      expect(jwt.decode).toHaveBeenCalledWith(mockClaimRequest.token);
+      expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
       expect(MockIamService.initializeIAM).toHaveBeenCalled();
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
         type: ENSNamespaceTypes.Organization,
-        owner: mockClaimRequest.requester.split(':')[2],
+        owner: createClaimRequest.requester.split(':')[2],
       });
     });
 
-    it(`createOrg() should recieve claim request event and skip processing it `, async () => {
+    it(`createOrg() throw an error when role is not the role for requesting org creation `, async () => {
       MockConfigService.get = jest.fn().mockResolvedValueOnce(chance.string());
-      const mockClaimRequest = {
-        id: chance.string(),
-        token: 'qwerty',
-        claimIssuer: [mockIssuerDID],
-        requester: mockRequesterDID,
-        registrationTypes: [RegistrationTypes.OnChain],
-      };
-      await controller.createOrg(mockClaimRequest);
-      expect(MockLogger.log).toHaveBeenCalledTimes(1);
-      expect(MockLogger.log).toBeCalledWith(
+
+      await expect(
+        controller.createOrg(createClaimRequest),
+      ).rejects.toThrowError(
+        'Role found is not the role for requesting to create a new organisation',
+      );
+      expect(MockLogger.error).toHaveBeenCalledTimes(1);
+      expect(MockLogger.error).toBeCalledWith(
         `Role found in claim request event is not the role that is used to request a new organization, exiting org creation process.`,
       );
     });
 
-    it(`createOrg() should recieve claim request event and skip processing it if both ORG_NAMESPACE and claimType are not available `, async () => {
+    it(`createOrg() should throw an error when both ORG_NAMESPACE and claimType are not available `, async () => {
       delete claimTokenData.claimType;
       MockConfigService.get = jest.fn().mockResolvedValueOnce(null);
-      const mockClaimRequest = {
-        id: chance.string(),
-        token: 'qwerty',
-        claimIssuer: [mockIssuerDID],
-        requester: mockRequesterDID,
-        registrationTypes: [RegistrationTypes.OnChain],
-      };
-      await controller.createOrg(mockClaimRequest);
-      expect(MockLogger.log).toHaveBeenCalledTimes(1);
-      expect(MockLogger.log).toBeCalledWith(
+
+      await expect(
+        controller.createOrg(createClaimRequest),
+      ).rejects.toThrowError(
+        'Role found is not the role for requesting to create a new organisation',
+      );
+      expect(MockLogger.error).toHaveBeenCalledTimes(1);
+      expect(MockLogger.error).toBeCalledWith(
         `Role found in claim request event is not the role that is used to request a new organization, exiting org creation process.`,
       );
     });

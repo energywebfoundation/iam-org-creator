@@ -1,6 +1,13 @@
-import { BadRequestException, Controller, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventPattern, Payload } from '@nestjs/microservices';
+import { plainToClass } from 'class-transformer';
+import { validate } from 'class-validator';
 import { ENSNamespaceTypes } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { IamService } from '../iam/iam.service';
@@ -23,6 +30,18 @@ export class OrgCreatorController {
 
   @EventPattern('*.claim.exchange')
   async createOrg(@Payload() message: ClaimRequestEventDto): Promise<boolean> {
+    const requestObject = plainToClass(ClaimRequestEventDto, message);
+    const errors = await validate(requestObject, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+
+    if (errors.length > 0) {
+      this.logger.log(
+        `Event Request recieved is not a claims creation event... skipping org creation event`,
+      );
+      return;
+    }
     const { token, requester, id, registrationTypes } = message;
 
     const { claimData } = jwt.decode(token) as IClaimToken;
@@ -34,10 +53,12 @@ export class OrgCreatorController {
     );
 
     if (claimData?.claimType !== requestNewOrgRole) {
-      this.logger.log(
+      this.logger.error(
         `Role found in claim request event is not the role that is used to request a new organization, exiting org creation process.`,
       );
-      return;
+      throw new UnauthorizedException(
+        'Role found is not the role for requesting to create a new organisation.',
+      );
     }
 
     await this.iamService.initializeIAM();
@@ -51,9 +72,8 @@ export class OrgCreatorController {
     const orgName = claimData?.fields.find((x) => x.key === 'orgname').value;
 
     if (userHasOrgCheck?.length > 0) {
-      throw new BadRequestException(
-        'User already has organisation created.. exiting org creation process',
-      );
+      this.logger.error(`User already has an existing organisation.`);
+      throw new BadRequestException('User already has organisation created.');
     }
 
     const data = { orgName };
