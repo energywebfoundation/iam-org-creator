@@ -18,7 +18,6 @@ async function bootstrap() {
     },
   );
   const configService = app.get(ConfigService);
-  // app.useGlobalPipes(new ValidationPipe());
   app.listen(() =>
     Logger.log(
       `IamOrgCreator Service is now listening to NATS events on port: ${configService.get(

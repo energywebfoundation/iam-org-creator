@@ -16,8 +16,4 @@ export class ClaimRequestEventDto {
 
   @IsString({ each: true })
   registrationTypes: RegistrationTypes[];
-
-  // constructor(claimRequest: Partial<ClaimRequestEventDto>) {
-  //   Object.assign(this, claimRequest);
-  // }
 }
