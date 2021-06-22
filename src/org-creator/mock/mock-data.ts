@@ -16,7 +16,7 @@ export const claimTokenData = {
 
 export const createClaimRequest = {
   id: chance.guid({ version: 4 }),
-  token: chance.apple_token(),
+  token: 'qwertytokenvalue',
   claimIssuer: [`did:ethr:${chance.hash({ length: 16 })}`],
   requester: `did:ethr:${chance.hash({ length: 16 })}`,
   registrationTypes: [RegistrationTypes.OnChain],
@@ -24,7 +24,7 @@ export const createClaimRequest = {
 
 export const issueClaimRequest = {
   id: chance.guid({ version: 4 }),
-  token: chance.apple_token(),
+  token: 'qwertytokenvalue',
   requester: `did:ethr:${chance.hash({ length: 16 })}`,
   subjectAgreement: '',
   registrationTypes: [RegistrationTypes.OnChain],
