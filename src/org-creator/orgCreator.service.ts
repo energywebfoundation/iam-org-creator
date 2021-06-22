@@ -8,6 +8,10 @@ export class OrgCreatorService {
   }
 
   extractAddressFromDID(didString: string): string {
-    return didString.split(':')[2];
+    const didRegex = new RegExp(`^did:ethr:`);
+    if (didString && didRegex.test(didString) === true) {
+      return didString.split(':')[2];
+    }
+    return didString;
   }
 }
