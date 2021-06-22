@@ -19,7 +19,7 @@ nodejs version 10+
 
 ## Config
 
-[configuration variables](scr/doc/config.md)
+[configuration variables](src/docs/config.md)
 
 ## Installation
 
