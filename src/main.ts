@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -17,7 +17,6 @@ async function bootstrap() {
       },
     },
   );
-
   const configService = app.get(ConfigService);
   app.listen(() =>
     Logger.log(
