@@ -1,0 +1,24 @@
+version: "3.4"
+
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: ./docker/dev/Dockerfile
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - ${NESTJS_PORT}:${NESTJS_PORT}
+    command: npm run start:dev
+    env_file:
+      - .env
+    networks:
+      - main
+    networks:
+      - main
+networks:
+  main:
+
+
