@@ -36,9 +36,10 @@ jobs:
         run: npm audit --audit-level=critical
       - name: Build project
         run: npm run build
-      - name: Run tests
+      - name: Run Nats
         uses: nats-io/jetstream-gh-action/create/stream@main
         with:
           config: .env
-          server: nats://localhost:4222
+          server: 0.0.0.0:4222
+      - name: Run Tests
         run: npm run test  --coverage --reporters=default --reporters=jest-junit --runInBand --forceExit
