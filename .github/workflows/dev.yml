@@ -39,7 +39,7 @@ jobs:
       - name: Run Nats
         uses: nats-io/jetstream-gh-action/create/stream@main
         with:
-          config: dev.env
+          config: env.dev
           server: 0.0.0.0:4222
       - name: Run Tests
         run: npm run test  --coverage --reporters=default --reporters=jest-junit --runInBand --forceExit
