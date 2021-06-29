@@ -28,7 +28,7 @@ jobs:
       - name: Check linting
         run: npm run fix:tslint
       - name: Audit package dependencies
-        run: npm audit
+        run: npm audit --audit-level=critical
       - name: Build project
         run: npm run build
       - name: Run tests
