@@ -1,4 +1,4 @@
-name: dev
+name: DEV
 
 on:
   push:
@@ -10,6 +10,11 @@ jobs:
     strategy:
       matrix:
         node-version: [14.x]
+    services:
+      jetstream:
+        image: synadia/jsm:latest
+        options: >-
+          -e JSM_MODE=server
     steps:
       - uses: actions/checkout@v2
       - name: Setup app dependencies
@@ -32,4 +37,8 @@ jobs:
       - name: Build project
         run: npm run build
       - name: Run tests
+        uses: nats-io/jetstream-gh-action/create/stream@main
+        with:
+          config: .env
+          server: nats://localhost:4222
         run: npm run test  --coverage --reporters=default --reporters=jest-junit --runInBand --forceExit

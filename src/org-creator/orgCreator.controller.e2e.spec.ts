@@ -71,7 +71,7 @@ describe('OrgCreatorController ', () => {
             name: 'NATS_SERVICE',
             transport: Transport.NATS,
             options: {
-              url: 'nats://localhost:4222',
+              url: 'nats://0.0.0.0:4222',
             },
           },
         ]),
