@@ -1,4 +1,4 @@
-version: "3.4"
+version: '3.4'
 
 services:
   app:
@@ -16,9 +16,19 @@ services:
       - .env
     networks:
       - main
+    depends_on:
+      - nats
+  nats:
+    container_name: nats
+    image: synadia/nats-server:nightly
+    volumes:
+      - ./config/:/etc/nats
+    command: '-c /etc/nats/nats.conf'
     networks:
       - main
+    ports:
+      - '4222:4222'
+      - '8222:8222'
+      - '9222:9222'
 networks:
   main:
-
-
