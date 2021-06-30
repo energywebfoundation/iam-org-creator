@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
 jobs:
-  build-deploy:
+  build-test:
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,9 +29,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Check linting
-        run: npm run fix:tslint
+        run: npm run lint
       - name: Audit package dependencies
         run: npm audit --audit-level=critical
       - name: Build project

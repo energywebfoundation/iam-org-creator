@@ -11,7 +11,7 @@ COPY docker ./docker
 
 RUN chmod +x ./docker/node-modules-clean.sh
 
-RUN npm i && npm cache clean --force && \
+RUN npm ci && npm cache clean --force && \
   ./docker/node-modules-clean.sh && \
   npm dedupe && \
   rm -f .npmrc

@@ -50,45 +50,43 @@ $ npm install
 
 To publish events to the org-creator service to process run this snippet as a ts or js file.
 
-```bash
-   import { connect, Codec, JSONCodec } from "nats";
+```javascript
+import { connect, Codec, JSONCodec } from 'nats';
 
-   const sampleCreateRequestClaim = {
-       "id": '2952901f-6e22-445b-af6a-fg92f54cf26b',
-       "token": '<valid_claim_token>',
-       "claimIssuer": [ 'did:ethr:0x7dD6eF86e6f143300C4550220c4eD66690a655fc' ],
-       "requester": 'did:ethr:0x39579900f8f50819fd5521a9aC044a1B2a849DC6',
-       "registrationTypes": ['RegistrationTypes::OffChain'],
-   };
+const sampleCreateRequestClaim = {
+  id: '2952901f-6e22-445b-af6a-fg92f54cf26b',
+  token: '<valid_claim_token>',
+  claimIssuer: ['did:ethr:0x7dD6eF86e6f143300C4550220c4eD66690a655fc'],
+  requester: 'did:ethr:0x39579900f8f50819fd5521a9aC044a1B2a849DC6',
+  registrationTypes: ['RegistrationTypes::OffChain'],
+};
 
-   async function createConnection(successCallback: any, errorCallback: any) {
-     const natsServerUrl = "nats://identityevents-dev-nats.energyweb.org:4222" // this must be the same as the natsServerUrl of the org creator service ;
-     const nc = await connect({ servers: [natsServerUrl] });
-     const message = JSONCodec();
+async function createConnection(successCallback: any, errorCallback: any) {
+  const natsServerUrl = 'nats://identityevents-dev-nats.energyweb.org:4222'; // this must be the same as the natsServerUrl of the org creator service ;
+  const nc = await connect({ servers: [natsServerUrl] });
+  const message = JSONCodec();
 
+  const claimsRequestMessage = message.encode(sampleCreateRequestClaim);
 
-     const claimsRequestMessage = message.encode(sampleCreateRequestClaim);
+  nc.publish('test.claim.exchange', claimsRequestMessage);
+}
 
-     nc.publish("test.claim.exchange", claimsRequestMessage);
-   }
+function apiFunctionWrapper() {
+  return new Promise((resolve, reject) => {
+    createConnection(
+      (successResponse: any) => {
+        resolve(successResponse);
+      },
+      (errorResponse: any) => {
+        reject(errorResponse);
+      },
+    );
+  });
+}
 
-   function apiFunctionWrapper() {
-     return new Promise((resolve, reject) => {
-       createConnection(
-         (successResponse: any) => {
-           resolve(successResponse);
-         },
-         (errorResponse: any) => {
-           reject(errorResponse);
-         }
-       );
-     });
-   }
-
-   (async () => {
-     await apiFunctionWrapper();
-   })();
-
+(async () => {
+  await apiFunctionWrapper();
+})();
 ```
 
 ## Test
