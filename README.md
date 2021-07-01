@@ -50,6 +50,8 @@ $ npm install
 
 To publish events to the org-creator service to process run this snippet as a ts or js file.
 
+To generate a valid claim token, call the [createPublicClaim](https://github.com/energywebfoundation/iam-client-lib/blob/3a5c4be4e3c45248110abfab340b25d9be55c92d/src/iam.ts#L338) method of the `iam-client-lib` with an object param in this format `{ data: { claimType: mytest.roles.testy.iam , claimTypeVersion: 1.0 }, subject?: 0x7dD6eF77e6f143300C4550220c4eD66690a655fc }`
+
 ```javascript
 import { connect, Codec, JSONCodec } from 'nats';
 
@@ -88,6 +90,8 @@ function apiFunctionWrapper() {
   await apiFunctionWrapper();
 })();
 ```
+
+You will get a logged output from the org-creator service with the message `Processing event recieved...`
 
 ## Test
 

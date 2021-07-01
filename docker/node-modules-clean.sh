@@ -1,3 +1,4 @@
+# remove unused dependencies
 rm -rf node_modules/rxjs/src/
 rm -rf node_modules/rxjs/bundles/
 rm -rf node_modules/rxjs/_esm5/

@@ -30,6 +30,7 @@ export class OrgCreatorController {
 
   @EventPattern('*.claim.exchange')
   async createOrg(@Payload() message: ClaimRequestEventDto): Promise<boolean> {
+    this.logger.log(`Processing event recieved...`);
     const requestObject = plainToClass(ClaimRequestEventDto, message);
     const errors = await validate(requestObject, {
       whitelist: true,
