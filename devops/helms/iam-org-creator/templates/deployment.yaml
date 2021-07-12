@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "iam-org-creator.fullname" . }}
+  labels:
+    {{- include "iam-org-creator.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "iam-org-creator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "iam-org-creator.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "iam-org-creator.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.iamOrgCreator.config.port | default 3000 }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: NESTJS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "iam-org-creator.fullname" . }}-configmap
+                  key: NESTJS_PORT
+            - name: NATS_CLIENTS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "iam-org-creator.fullname" . }}-configmap
+                  key: NATS_CLIENTS_URL
+            - name: REQUEST_NEW_ORG_ROLE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "iam-org-creator.fullname" . }}-configmap
+                  key: REQUEST_NEW_ORG_ROLE
+            - name: VOLTA_CHAIN_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "iam-org-creator.fullname" . }}-configmap
+                  key: VOLTA_CHAIN_ID
+            - name: CACHE_SERVER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "iam-org-creator.fullname" . }}-configmap
+                  key: CACHE_SERVER_URL
+            - name: RPC_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "iam-org-creator.fullname" . }}-configmap
+                  key: RPC_URL
+            - name: NATS_SERVER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "iam-org-creator.fullname" . }}-configmap
+                  key: NATS_SERVER_URL
+            - name: ORG_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "iam-org-creator.fullname" . }}-configmap
+                  key: ORG_NAMESPACE
+            - name: PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "iam-org-creator.fullname" . }}-secret
+                  key: PRIVATE_KEY
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
