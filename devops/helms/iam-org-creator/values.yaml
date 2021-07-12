@@ -1,0 +1,98 @@
+# Default values for iam-org-creator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+iamOrgCreator:
+  config:
+    NESTJS_PORT: 9000
+    NATS_CLIENTS_URL: nats://identityevents-dev-nats.energyweb.org:4222  
+    REQUEST_NEW_ORG_ROLE: orgowner.roles.orgcreator.apps.energyweb.iam.ewc
+    VOLTA_CHAIN_ID: 73799
+    CACHE_SERVER_URL: https://identitycache-dev.energyweb.org/
+    RPC_URL: https://volta-rpc.energyweb.org
+    NATS_SERVER_URL: https://identityevents-dev.energyweb.org
+    ORG_NAMESPACE: iam.ewc
+
+
+image:
+  repository: 098061033856.dkr.ecr.us-east-1.amazonaws.com/iam-org-creator-ecr
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "1.0.2-dev"
+
+imagePullSecrets:
+  - name: iam-org-creator-ecr-secret
+nameOverride: "iam-org-creator"
+fullnameOverride: "iam-org-creator"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+#commented to have dynamic configmap reload
+#podAnnotations: {}
+
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: NodePort
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {kubernetes.io/ingress.class: "alb",alb.ingress.kubernetes.io/scheme: "internet-facing"}
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host:
+      paths:
+      - path: /*
+        backend:
+          serviceName: iam-org-creator
+          servicePort: 80
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+#not tested yet
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
