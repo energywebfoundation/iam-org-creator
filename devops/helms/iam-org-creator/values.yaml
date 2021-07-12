@@ -8,7 +8,7 @@ iamOrgCreator:
   config:
     NESTJS_PORT: 9000
     NATS_CLIENTS_URL: nats://identityevents-dev-nats.energyweb.org:4222  
-    REQUEST_NEW_ORG_ROLE: mytest.roles.testy.iam.ewc
+    REQUEST_NEW_ORG_ROLE: orgowner.roles.orgcreator.apps.energyweb.iam.ewc
     VOLTA_CHAIN_ID: 73799
     CACHE_SERVER_URL: https://identitycache-dev.energyweb.org/
     RPC_URL: https://volta-rpc.energyweb.org
@@ -20,7 +20,7 @@ image:
   repository: 098061033856.dkr.ecr.us-east-1.amazonaws.com/iam-org-creator-ecr
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1.0.1-dev"
+  tag: "1.0.2-dev"
 
 imagePullSecrets:
   - name: iam-org-creator-ecr-secret
@@ -36,7 +36,9 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: {}
+#commented to have dynamic configmap reload
+#podAnnotations: {}
+
 
 podSecurityContext: {}
   # fsGroup: 2000
@@ -81,8 +83,9 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+#not tested yet
 autoscaling:
-  enabled: true
+  enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
