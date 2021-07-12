@@ -1,6 +1,8 @@
 FROM node:14.17-alpine 
 
+COPY ./ ./app
 WORKDIR /app
+
 
 RUN apk add --no-cache git bash curl openssl python make g++ && \
   curl -sfL https://install.goreleaser.com/github.com/tuananh/node-prune.sh | sh && \
@@ -15,3 +17,5 @@ RUN npm ci && npm cache clean --force && \
   ./docker/node-modules-clean.sh && \
   npm dedupe && \
   rm -f .npmrc
+
+ENTRYPOINT npm run start:dev
