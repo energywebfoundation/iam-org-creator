@@ -22,8 +22,7 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "1.0.2-dev"
 
-imagePullSecrets:
-  - name: iam-org-creator-ecr-secret
+imagePullSecrets: []
 nameOverride: "iam-org-creator"
 fullnameOverride: "iam-org-creator"
 
@@ -52,11 +51,11 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: NodePort
-  port: 80
+  type: LoadBalancer
+  port: 9000
 
 ingress:
-  enabled: true
+  enabled: false
   annotations: {kubernetes.io/ingress.class: "alb",alb.ingress.kubernetes.io/scheme: "internet-facing"}
     # kubernetes.io/tls-acme: "true"
   hosts:
