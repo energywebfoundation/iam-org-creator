@@ -20,7 +20,7 @@ image:
   repository: 098061033856.dkr.ecr.us-east-1.amazonaws.com/iam-org-creator-ecr
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1.0.2-dev"
+  tag: "v1.0.3-dev"
 
 imagePullSecrets: []
 nameOverride: "iam-org-creator"
