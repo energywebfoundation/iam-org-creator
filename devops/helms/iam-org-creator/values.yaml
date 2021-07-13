@@ -59,7 +59,7 @@ ingress:
   annotations: {kubernetes.io/ingress.class: "alb",alb.ingress.kubernetes.io/scheme: "internet-facing"}
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host:
+    - host: iam-org-creator-dev.energyweb.org
       paths:
       - path: /*
         backend:
