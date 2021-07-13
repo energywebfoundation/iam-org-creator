@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { RegistrationTypes } from 'iam-client-lib';
 
 export class ClaimRequestEventDto {
@@ -16,4 +16,8 @@ export class ClaimRequestEventDto {
 
   @IsString({ each: true })
   registrationTypes: RegistrationTypes[];
+
+  @IsOptional()
+  @IsString()
+  subjectAgreement: string;
 }
