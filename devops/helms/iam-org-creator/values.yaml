@@ -22,8 +22,7 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "1.0.2-dev"
 
-imagePullSecrets:
-  - name: iam-org-creator-ecr-secret
+imagePullSecrets: []
 nameOverride: "iam-org-creator"
 fullnameOverride: "iam-org-creator"
 

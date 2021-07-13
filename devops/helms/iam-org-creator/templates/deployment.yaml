@@ -33,7 +33,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.iamOrgCreator.config.port | default 3000 }}
+              containerPort: {{ .Values.iamOrgCreator.config.NESTJS_PORT | default 9000 }}
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
