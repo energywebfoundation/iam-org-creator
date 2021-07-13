@@ -20,6 +20,7 @@ export const createClaimRequest = {
   claimIssuer: [`did:ethr:${chance.hash({ length: 16 })}`],
   requester: `did:ethr:${chance.hash({ length: 16 })}`,
   registrationTypes: [RegistrationTypes.OnChain],
+  subjectAgreement: '',
 };
 
 export const issueClaimRequest = {
