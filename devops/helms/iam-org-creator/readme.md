@@ -9,9 +9,7 @@
 
 # CI/CD workflow for dev:
 
-- Make a PR from feature branch to develop branch - it triggers ci.yml
-- After merged to develop branch, add tags (x.x.x-dev e.g. 1.0.0-dev) -> this triggers ECR deployment process of container
-- Once container is deployed, you could change tag in values.yaml (image.tag) -> once commited argo will rebuild application with new image tag
+- Once there is a merge to develop -> sync is automatic (container is deployed to ecr and then to k8s)
 
 # For the future:
 
