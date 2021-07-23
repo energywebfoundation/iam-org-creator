@@ -116,4 +116,4 @@ This project is licensed under the GNU General Public License v3.0 or later - se
 
 ## FAQ
 
-Frequently asked questions and their answers will be collected here.
+Frequently asked questions and their answers will be documented here.
