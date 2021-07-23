@@ -8,7 +8,7 @@ iamOrgCreator:
   config:
     NESTJS_PORT: 9000
     NATS_CLIENTS_URL: nats://identityevents-dev-nats.energyweb.org:4222  
-    REQUEST_NEW_ORG_ROLE: orgowner.roles.orgcreator.apps.energyweb.iam.ewc
+    REQUEST_NEW_ORG_ROLE: orgowner.roles.orgcreator.apps.testorg.iam.ewc
     VOLTA_CHAIN_ID: 73799
     CACHE_SERVER_URL: https://identitycache-dev.energyweb.org/
     RPC_URL: https://volta-rpc.energyweb.org
@@ -20,7 +20,7 @@ image:
   repository: 098061033856.dkr.ecr.us-east-1.amazonaws.com/iam-org-creator-ecr
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1.0.2-dev"
+  tag: "v1.0.4-dev"
 
 imagePullSecrets: []
 nameOverride: "iam-org-creator"
@@ -59,7 +59,7 @@ ingress:
   annotations: {kubernetes.io/ingress.class: "alb",alb.ingress.kubernetes.io/scheme: "internet-facing"}
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host:
+    - host: iam-org-creator-dev.energyweb.org
       paths:
       - path: /*
         backend:

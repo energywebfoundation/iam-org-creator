@@ -1,8 +1,6 @@
 name: ci
 
 on:
-  push:
-    branches: [ master, develop ]
   pull_request:
     branches: [ master, develop ]
 
@@ -15,7 +13,7 @@ jobs:
       - uses: styfle/cancel-workflow-action@0.9.0
         with:
           access_token: ${{ github.token }}
-  
+
   build-test:
     runs-on: ubuntu-latest
 
