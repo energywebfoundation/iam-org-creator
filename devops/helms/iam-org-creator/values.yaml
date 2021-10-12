@@ -7,24 +7,23 @@ replicaCount: 1
 iamOrgCreator:
   config:
     NESTJS_PORT: 9000
-    NATS_CLIENTS_URL: nats://identityevents-dev-nats.energyweb.org:4222  
+    NATS_CLIENTS_URL: nats://identityevents-dev-nats.energyweb.org:4222
     REQUEST_NEW_ORG_ROLE: orgowner.roles.orgcreator.apps.testorg.iam.ewc
     VOLTA_CHAIN_ID: 73799
-    CACHE_SERVER_URL: https://identitycache-dev.energyweb.org/
+    CACHE_SERVER_URL: https://identitycache-dev.energyweb.org/v1
     RPC_URL: https://volta-rpc.energyweb.org
     NATS_SERVER_URL: https://identityevents-dev.energyweb.org
     ORG_NAMESPACE: iam.ewc
-
 
 image:
   repository: 098061033856.dkr.ecr.us-east-1.amazonaws.com/iam-org-creator-ecr
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.0.4-dev"
+  tag: 'v1.0.4-dev'
 
 imagePullSecrets: []
-nameOverride: "iam-org-creator"
-fullnameOverride: "iam-org-creator"
+nameOverride: 'iam-org-creator'
+fullnameOverride: 'iam-org-creator'
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -33,16 +32,17 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  name: ''
 
 #commented to have dynamic configmap reload
 #podAnnotations: {}
 
-
-podSecurityContext: {}
+podSecurityContext:
+  {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext:
+  {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -56,21 +56,26 @@ service:
 
 ingress:
   enabled: true
-  annotations: {kubernetes.io/ingress.class: "alb",alb.ingress.kubernetes.io/scheme: "internet-facing"}
+  annotations:
+    {
+      kubernetes.io/ingress.class: 'alb',
+      alb.ingress.kubernetes.io/scheme: 'internet-facing',
+    }
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: iam-org-creator-dev.energyweb.org
       paths:
-      - path: /*
-        backend:
-          serviceName: iam-org-creator
-          servicePort: 80
+        - path: /*
+          backend:
+            serviceName: iam-org-creator
+            servicePort: 80
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
