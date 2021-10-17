@@ -14,6 +14,7 @@ jest
       didDocument: null,
       identityToken: '',
       realtimeExchangeConnected: true,
+      accountInfo: undefined,
     };
   });
 
