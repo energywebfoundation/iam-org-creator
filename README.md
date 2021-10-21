@@ -91,7 +91,7 @@ function apiFunctionWrapper() {
 })();
 ```
 
-You will get a logged output from the org-creator service with the message `Processing event recieved...`
+You will get a logged output from the org-creator service with the message `Processing event recieved....`
 
 ## Test
 
