@@ -5,6 +5,7 @@ import { Test } from '@nestjs/testing';
 import { Chance } from 'chance';
 import { ENSNamespaceTypes } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
+import { SentryService } from '../sentry/sentry.service';
 import { IamService } from '../iam/iam.service';
 import {
   claimTokenData,
@@ -93,6 +94,11 @@ describe('OrgCreatorController ', () => {
         {
           provide: Logger,
           useValue: MockLogger,
+        },
+
+        {
+          provide: SentryService,
+          useValue: jest.fn(),
         },
       ],
     }).compile();

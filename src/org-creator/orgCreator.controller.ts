@@ -3,6 +3,7 @@ import {
   Controller,
   Injectable,
   UnauthorizedException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventPattern, Payload } from '@nestjs/microservices';
@@ -10,6 +11,7 @@ import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { ENSNamespaceTypes } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
+import { SentryErrorInterceptor } from '../sentry/sentry-error-interceptor';
 import { IamService } from '../iam/iam.service';
 import { Logger } from '../logger/logger.service';
 import { ClaimRequestEventDto } from './orgCreator.dto';
@@ -17,6 +19,7 @@ import { OrgCreatorService } from './orgCreator.service';
 import { IClaimToken } from './orgCreator.type';
 
 @Injectable()
+@UseInterceptors(SentryErrorInterceptor)
 @Controller()
 export class OrgCreatorController {
   constructor(
@@ -55,10 +58,10 @@ export class OrgCreatorController {
 
     if (claimData?.claimType !== requestNewOrgRole) {
       this.logger.error(
-        `Role found in claim request event is not the role that is used to request a new organization, exiting org creation process.`,
+        `Role found in claim request event ${claimData?.claimType} is not the role that is used to request a new organization, exiting org creation process.`,
       );
       throw new UnauthorizedException(
-        'Role found is not the role for requesting to create a new organisation.',
+        `Role found ${claimData?.claimType} is not the role for requesting to create a new organisation.`,
       );
     }
 
@@ -73,8 +76,10 @@ export class OrgCreatorController {
     const orgName = claimData?.fields.find((x) => x.key === 'orgname').value;
 
     if (userHasOrgCheck?.length > 0) {
-      this.logger.error(`User already has an existing organisation.`);
-      throw new BadRequestException('User already has organisation created.');
+      this.logger.error(`User ${owner} already has an existing organisation.`);
+      throw new BadRequestException(
+        `User ${owner} already has organisation created.`,
+      );
     }
 
     const data = { orgName };
