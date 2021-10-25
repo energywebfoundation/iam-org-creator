@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
+import * as Sentry from '@sentry/node';
 import { Client, Options } from '@sentry/types';
 
 @Injectable()

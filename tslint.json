@@ -25,7 +25,7 @@
     ],
     "member-access": [false],
     "member-ordering": [false],
-    "no-console": [true, "log", "info", "error", "warn"],
+    "no-console": [true, "warn"],
     "no-empty": true,
     "no-empty-interface": true,
     "no-unused-expression": false,

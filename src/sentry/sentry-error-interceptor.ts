@@ -22,7 +22,7 @@ export class SentryErrorInterceptor implements NestInterceptor {
 
           withScope((scope) => {
             const data = Handlers.parseRequest(
-              <any>{},
+              {} as any,
               context.switchToHttp().getRequest(),
               {},
             );
