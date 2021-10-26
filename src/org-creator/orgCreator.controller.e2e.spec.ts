@@ -6,6 +6,7 @@ import { Chance } from 'chance';
 import { ENSNamespaceTypes } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { IamService } from '../iam/iam.service';
+import { SentryService } from '../sentry/sentry.service';
 import {
   claimTokenData,
   createClaimRequest,
@@ -93,6 +94,11 @@ describe('OrgCreatorController ', () => {
         {
           provide: Logger,
           useValue: MockLogger,
+        },
+
+        {
+          provide: SentryService,
+          useValue: jest.fn(),
         },
       ],
     }).compile();
