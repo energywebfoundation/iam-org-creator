@@ -21,16 +21,26 @@ export class SentryErrorInterceptor implements NestInterceptor {
           if (!withScope || !captureException) return;
 
           withScope((scope) => {
-            const data = Handlers.parseRequest(
-              {} as any,
-              context.switchToHttp().getRequest(),
-              {},
-            );
+            const contextType = context.getType();
 
-            scope.setExtra('req', data.request);
+            if (contextType === 'http') {
+              const data = Handlers.parseRequest(
+                {} as any,
+                context.switchToHttp().getRequest(),
+                {},
+              );
 
-            if (data.extra) scope.setExtras(data.extra);
-            if (data.user) scope.setUser(data.user);
+              scope.setExtra('http_req', data.request);
+
+              if (data.extra) scope.setExtras(data.extra);
+              if (data.user) scope.setUser(data.user);
+            }
+
+            if (contextType === 'rpc') {
+              scope.setExtra('context_rpc', context.switchToRpc().getContext());
+              scope.setExtra('data_rpc', context.switchToRpc().getData());
+            }
+
             captureException(exception);
           });
         },
