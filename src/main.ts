@@ -1,4 +1,4 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -14,6 +14,8 @@ async function bootstrap() {
       transport: Transport.NATS,
       options: {
         url: process.env.NATS_CLIENTS_URL,
+        pingInterval: 5000,
+        maxReconnectAttempts: -1,
       },
     },
   );
