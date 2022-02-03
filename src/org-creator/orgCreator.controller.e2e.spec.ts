@@ -130,7 +130,7 @@ describe('OrgCreatorController ', () => {
   describe('createOrg Event', () => {
     it(`createOrg() should ignore rejectClaimRequest event`, async () => {
       const response = await client
-        .send('a.claim.exchange', rejectClaimRequest)
+        .send('request-credential.claim-exchange.a.a', rejectClaimRequest)
         .toPromise();
 
       expect(response).toBe(undefined);
@@ -141,7 +141,7 @@ describe('OrgCreatorController ', () => {
 
     it(`createOrg() should ignore issueClaimRequest event`, async () => {
       const response = await client
-        .send('a.claim.exchange', issueClaimRequest)
+        .send('request-credential.claim-exchange.a.a', issueClaimRequest)
         .toPromise();
 
       expect(response).toBe(undefined);
@@ -153,7 +153,7 @@ describe('OrgCreatorController ', () => {
     it(`createOrg() should process createClaimRequest event`, async () => {
       const orgNameSpace = config.get('ORG_NAMESPACE');
       const response = await client
-        .send('a.claim.exchange', createClaimRequest)
+        .send('request-credential.claim-exchange.a.a', createClaimRequest)
         .toPromise();
 
       expect(response).toBe(true);
@@ -188,7 +188,9 @@ describe('OrgCreatorController ', () => {
         .mockResolvedValueOnce([{ name: 'org' }]);
 
       expect(
-        client.send('a.claim.exchange', createClaimRequest).toPromise(),
+        client
+          .send('request-credential.claim-exchange.a.a', createClaimRequest)
+          .toPromise(),
       ).rejects.toThrowError('User already has organisation creaed.');
     });
 
@@ -196,7 +198,9 @@ describe('OrgCreatorController ', () => {
       MockConfigService.get = jest.fn().mockResolvedValueOnce(chance.string());
 
       expect(
-        client.send('a.claim.exchange', createClaimRequest).toPromise(),
+        client
+          .send('request-credential.claim-exchange.a.a', createClaimRequest)
+          .toPromise(),
       ).rejects.toThrowError(
         'Role found is not the role for requesting to create a new organisation.',
       );

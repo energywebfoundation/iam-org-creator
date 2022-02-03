@@ -31,7 +31,7 @@ export class OrgCreatorController {
     this.logger.setContext(OrgCreatorController.name);
   }
 
-  @EventPattern('*.claim.exchange')
+  @EventPattern('request-credential.claim-exchange.*.*')
   async createOrg(@Payload() message: ClaimRequestEventDto): Promise<boolean> {
     this.logger.log(`Processing event recieved...`);
     const requestObject = plainToClass(ClaimRequestEventDto, message);
