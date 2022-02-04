@@ -7,7 +7,7 @@ replicaCount: 1
 iamOrgCreator:
   config:
     NESTJS_PORT: 9000
-    NATS_CLIENTS_URL: nats://iam-cache-server-nats.ics.svc.cluster.local:4222
+    NATS_CLIENTS_URL: nats://identityevents-dev-nats.energyweb.org:4222
     REQUEST_NEW_ORG_ROLE: orgowner.roles.orgcreator.apps.testorg.iam.ewc
     VOLTA_CHAIN_ID: 73799
     CACHE_SERVER_URL: https://identitycache-dev.energyweb.org/v1
