@@ -29,10 +29,18 @@ describe('OrgCreatorService', () => {
     service = module.get<OrgCreatorService>(OrgCreatorService);
   });
 
-  it('extractAddressFromDID(), should extract string from DIDString', () => {
+  it('extractAddressFromDID(), should extract string from old DIDString', () => {
     const mockDidString = 'did:ethr:0x39579900f9d60819fd5521a9aC044a1B2a849DC6';
     expect(service.extractAddressFromDID(mockDidString)).toBe(
-      mockDidString.split(':')[2],
+      '0x39579900f9d60819fd5521a9aC044a1B2a849DC6',
+    );
+  });
+
+  it('extractAddressFromDID(), should extract string from new DIDString', () => {
+    const mockDidString =
+      'did:ethr:volta:0x39579900f9d60819fd5521a9aC044a1B2a849DC6';
+    expect(service.extractAddressFromDID(mockDidString)).toBe(
+      '0x39579900f9d60819fd5521a9aC044a1B2a849DC6',
     );
   });
 });
