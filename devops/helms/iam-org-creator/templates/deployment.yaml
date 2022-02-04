@@ -68,11 +68,6 @@ spec:
                 configMapKeyRef:
                   name: {{ include "iam-org-creator.fullname" . }}-configmap
                   key: RPC_URL
-            - name: NATS_SERVER_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "iam-org-creator.fullname" . }}-configmap
-                  key: NATS_SERVER_URL
             - name: ORG_NAMESPACE
               valueFrom:
                 configMapKeyRef:

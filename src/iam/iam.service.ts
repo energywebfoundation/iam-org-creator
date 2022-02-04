@@ -4,10 +4,8 @@ import {
   ClaimsService,
   DomainsService,
   initWithPrivateKeySigner,
-  MessagingMethod,
   setCacheConfig,
   setChainConfig,
-  setMessagingConfig,
 } from 'iam-client-lib';
 import { Logger } from '../logger/logger.service';
 
@@ -31,12 +29,6 @@ export class IamService implements OnApplicationBootstrap {
     // Set RPC
     setChainConfig(voltaChainId, {
       rpcUrl: configService.get<string>('RPC_URL'),
-    });
-
-    // Set Messaging Options
-    setMessagingConfig(voltaChainId, {
-      messagingMethod: MessagingMethod.Nats,
-      natsServerUrl: configService.get<string>('NATS_SERVER_URL'),
     });
   }
 
