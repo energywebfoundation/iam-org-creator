@@ -7,7 +7,8 @@ export interface IClaimToken {
 }
 
 export type ClaimData = {
-  fields: KeyValues[];
+  fields?: KeyValues[];
+  requestorFields?: KeyValues[];
   claimType: string;
   claimTypeVersion: string;
 };

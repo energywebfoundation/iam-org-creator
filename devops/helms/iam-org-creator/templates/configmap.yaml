@@ -11,5 +11,4 @@ data:
   VOLTA_CHAIN_ID: {{ .Values.iamOrgCreator.config.VOLTA_CHAIN_ID | default "73799" | quote }}
   CACHE_SERVER_URL: {{ .Values.iamOrgCreator.config.CACHE_SERVER_URL | default "https://identitycache-dev.energyweb.org/v1" | quote }}
   RPC_URL: {{ .Values.iamOrgCreator.config.RPC_URL | default "https://volta-rpc.energyweb.org" | quote }}
-  NATS_SERVER_URL: {{ .Values.iamOrgCreator.config.NATS_SERVER_URL | default "https://identityevents-dev.energyweb.org" | quote }}
   ORG_NAMESPACE: {{ .Values.iamOrgCreator.config.ORG_NAMESPACE | default "iam.ewc" | quote }}

@@ -78,7 +78,13 @@ export class OrgCreatorController {
       owner,
     });
 
-    const orgName = claimData?.fields.find((x) => x.key === 'orgname').value;
+    const orgName =
+      claimData?.fields?.find((x) => x.key === 'orgname')?.value ||
+      claimData?.requestorFields?.find((x) => x.key === 'orgname')?.value;
+
+    if (!orgName) {
+      throw new BadRequestException('Org name is not found in claim');
+    }
 
     if (userHasOrgCheck?.length > 0) {
       this.logger.error(`User ${owner} already has an existing organization.`);
