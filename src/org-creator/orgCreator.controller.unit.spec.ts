@@ -2,7 +2,7 @@ import { INestApplication, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { Chance } from 'chance';
-import { ENSNamespaceTypes, RegistrationTypes } from 'iam-client-lib';
+import { NamespaceType } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { IamService } from '../iam/iam.service';
 import { SentryService } from '../sentry/sentry.service';
@@ -43,6 +43,7 @@ const MockIamService = {
   createOrganization: jest.fn(),
   changeOrgOwnership: jest.fn(),
   issueClaimRequest: jest.fn(),
+  getClaimById: jest.fn(),
 };
 
 const MockOrgCreatorService = {
@@ -90,17 +91,20 @@ describe('NATS transport', () => {
 
     controller = module.get<OrgCreatorController>(OrgCreatorController);
     config = module.get<ConfigService>(ConfigService);
+    MockIamService.getClaimById().mockResolvedValue(createClaimRequest);
   });
 
   describe('createOrg() event', () => {
-    it(`createOrg() should recieve claim request event and process it `, async () => {
-      const request = await controller.createOrg(createClaimRequest);
+    it(`createOrg() should receive claim request event and process it `, async () => {
+      const request = await controller.createOrg({
+        claimId: createClaimRequest.id,
+      });
       const orgNameSpace = config.get('ORG_NAMESPACE');
 
       expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
       expect(MockIamService.initializeIAM).toHaveBeenCalled();
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
-        type: ENSNamespaceTypes.Organization,
+        type: NamespaceType.Organization,
         owner: createClaimRequest.requester.split(':')[2],
       });
       expect(MockIamService.createOrganization).toHaveBeenCalledWith({
@@ -124,14 +128,16 @@ describe('NATS transport', () => {
         .fn()
         .mockResolvedValueOnce([{ name: 'org' }]);
       await expect(
-        controller.createOrg(createClaimRequest),
-      ).rejects.toThrowError(`User ${owner} already has organisation created.`);
+        controller.createOrg({
+          claimId: createClaimRequest.id,
+        }),
+      ).rejects.toThrowError(`User ${owner} already has organization created.`);
 
       expect(jwt.decode).toHaveBeenCalled();
       expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
       expect(MockIamService.initializeIAM).toHaveBeenCalled();
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
-        type: ENSNamespaceTypes.Organization,
+        type: NamespaceType.Organization,
         owner,
       });
     });
@@ -141,9 +147,11 @@ describe('NATS transport', () => {
       const role = claimTokenData.claimType;
 
       await expect(
-        controller.createOrg(createClaimRequest),
+        controller.createOrg({
+          claimId: createClaimRequest.id,
+        }),
       ).rejects.toThrowError(
-        `Role found ${role} is not the role for requesting to create a new organisation`,
+        `Role found ${role} is not the role for requesting to create a new organization`,
       );
       expect(MockLogger.error).toHaveBeenCalledTimes(1);
       expect(MockLogger.error).toBeCalledWith(
@@ -156,9 +164,11 @@ describe('NATS transport', () => {
       MockConfigService.get = jest.fn().mockResolvedValueOnce(null);
 
       await expect(
-        controller.createOrg(createClaimRequest),
+        controller.createOrg({
+          claimId: createClaimRequest.id,
+        }),
       ).rejects.toThrowError(
-        `Role found ${claimTokenData?.claimType} is not the role for requesting to create a new organisation`,
+        `Role found ${claimTokenData?.claimType} is not the role for requesting to create a new organization`,
       );
       expect(MockLogger.error).toHaveBeenCalledTimes(1);
       expect(MockLogger.error).toBeCalledWith(

@@ -1,27 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
-  IAM,
+  ClaimsService,
+  DomainsService,
+  initWithPrivateKeySigner,
   MessagingMethod,
-  setCacheClientOptions,
+  setCacheConfig,
   setChainConfig,
-  setMessagingOptions,
+  setMessagingConfig,
 } from 'iam-client-lib';
 import { Logger } from '../logger/logger.service';
 
 @Injectable()
-export class IamService extends IAM {
-  public _iam: IAM;
-  constructor(configService: ConfigService, private readonly logger: Logger) {
-    super({
-      rpcUrl: configService.get<string>('RPC_URL'),
-      privateKey: configService.get<string>('PRIVATE_KEY'),
-    });
+export class IamService implements OnApplicationBootstrap {
+  private domainsService: DomainsService;
+  private claimService: ClaimsService;
 
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: Logger,
+  ) {
     const voltaChainId = configService.get<number>('VOLTA_CHAIN_ID');
 
     // Set Cache Server
-    setCacheClientOptions(voltaChainId, {
+    setCacheConfig(voltaChainId, {
       url: configService.get<string>('CACHE_SERVER_URL'),
       cacheServerSupportsAuth: true,
     });
@@ -32,16 +34,48 @@ export class IamService extends IAM {
     });
 
     // Set Messaging Options
-    setMessagingOptions(voltaChainId, {
+    setMessagingConfig(voltaChainId, {
       messagingMethod: MessagingMethod.Nats,
       natsServerUrl: configService.get<string>('NATS_SERVER_URL'),
     });
   }
 
+  async onApplicationBootstrap() {
+    await this.initializeIAM();
+  }
+
   async initializeIAM() {
-    const { connected } = await this.initializeConnection({});
-    if (connected) {
-      this.logger.info('successfully connected..');
-    }
+    const { connectToCacheServer } = await initWithPrivateKeySigner(
+      this.configService.get<string>('PRIVATE_KEY'),
+      this.configService.get<string>('RPC_URL'),
+    );
+    const { connectToDidRegistry, domainsService } =
+      await connectToCacheServer();
+    const { claimsService } = await connectToDidRegistry();
+
+    this.domainsService = domainsService;
+    this.claimService = claimsService;
+
+    this.logger.log(`IAM Service Initialized...`);
+  }
+
+  get getENSTypesByOwner() {
+    return this.domainsService.getENSTypesByOwner;
+  }
+
+  get getClaimById() {
+    return this.claimService.getClaimById;
+  }
+
+  get createOrganization() {
+    return this.domainsService.createOrganization;
+  }
+
+  get changeOrgOwnership() {
+    return this.domainsService.changeOrgOwnership;
+  }
+
+  get issueClaimRequest() {
+    return this.claimService.issueClaimRequest;
   }
 }

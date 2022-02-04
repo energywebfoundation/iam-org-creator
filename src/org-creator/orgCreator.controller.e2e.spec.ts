@@ -1,9 +1,9 @@
-import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy, ClientsModule, Transport } from '@nestjs/microservices';
 import { Test } from '@nestjs/testing';
 import { Chance } from 'chance';
-import { ENSNamespaceTypes } from 'iam-client-lib';
+import { NamespaceType } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { IamService } from '../iam/iam.service';
 import { SentryService } from '../sentry/sentry.service';
@@ -49,6 +49,7 @@ const MockIamService = {
   createOrganization: jest.fn(),
   changeOrgOwnership: jest.fn(),
   issueClaimRequest: jest.fn(),
+  getClaimById: jest.fn(),
 };
 
 const MockOrgCreatorService = {
@@ -58,7 +59,6 @@ const MockOrgCreatorService = {
 };
 
 describe('OrgCreatorController ', () => {
-  let server;
   let app: INestApplication;
   let client: ClientProxy;
   let config: ConfigService;
@@ -104,7 +104,6 @@ describe('OrgCreatorController ', () => {
     }).compile();
 
     app = module.createNestApplication();
-    server = app.getHttpAdapter().getInstance();
 
     app.connectMicroservice({
       transport: Transport.NATS,
@@ -129,38 +128,47 @@ describe('OrgCreatorController ', () => {
 
   describe('createOrg Event', () => {
     it(`createOrg() should ignore rejectClaimRequest event`, async () => {
+      MockIamService.getClaimById.mockResolvedValueOnce(rejectClaimRequest);
       const response = await client
-        .send('request-credential.claim-exchange.a.a', rejectClaimRequest)
+        .send('request-credential.claim-exchange.a.a', {
+          claimId: rejectClaimRequest.id,
+        })
         .toPromise();
 
       expect(response).toBe(undefined);
       expect(MockLogger.log).toHaveBeenCalledWith(
-        'Event Request recieved is not a claims creation event... skipping org creation event',
+        'Event Request received is not a claims creation event... skipping org creation event',
       );
     }, 30000);
 
     it(`createOrg() should ignore issueClaimRequest event`, async () => {
+      MockIamService.getClaimById.mockResolvedValueOnce(issueClaimRequest);
       const response = await client
-        .send('request-credential.claim-exchange.a.a', issueClaimRequest)
+        .send('request-credential.claim-exchange.a.a', {
+          claimId: issueClaimRequest.id,
+        })
         .toPromise();
 
       expect(response).toBe(undefined);
       expect(MockLogger.log).toHaveBeenCalledWith(
-        'Event Request recieved is not a claims creation event... skipping org creation event',
+        'Event Request received is not a claims creation event... skipping org creation event',
       );
     }, 30000);
 
     it(`createOrg() should process createClaimRequest event`, async () => {
       const orgNameSpace = config.get('ORG_NAMESPACE');
+      MockIamService.getClaimById.mockResolvedValueOnce(createClaimRequest);
       const response = await client
-        .send('request-credential.claim-exchange.a.a', createClaimRequest)
+        .send('request-credential.claim-exchange.a.a', {
+          claimId: createClaimRequest.id,
+        })
         .toPromise();
 
       expect(response).toBe(true);
       expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
       expect(MockIamService.initializeIAM).toHaveBeenCalled();
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
-        type: ENSNamespaceTypes.Organization,
+        type: NamespaceType.Organization,
         owner: createClaimRequest.requester.split(':')[2],
       });
       expect(MockIamService.createOrganization).toHaveBeenCalledWith({
@@ -186,23 +194,23 @@ describe('OrgCreatorController ', () => {
       MockIamService.getENSTypesByOwner = jest
         .fn()
         .mockResolvedValueOnce([{ name: 'org' }]);
-
+      MockIamService.getClaimById.mockResolvedValueOnce(createClaimRequest);
       expect(
         client
           .send('request-credential.claim-exchange.a.a', createClaimRequest)
           .toPromise(),
-      ).rejects.toThrowError('User already has organisation creaed.');
+      ).rejects.toThrowError('User already has organization created.');
     });
 
-    it(`createOrg() should throw an error if role is not the role for requesting to create a new organisation. `, async () => {
+    it(`createOrg() should throw an error if role is not the role for requesting to create a new organization. `, async () => {
       MockConfigService.get = jest.fn().mockResolvedValueOnce(chance.string());
-
+      MockIamService.getClaimById.mockResolvedValueOnce(createClaimRequest);
       expect(
         client
           .send('request-credential.claim-exchange.a.a', createClaimRequest)
           .toPromise(),
       ).rejects.toThrowError(
-        'Role found is not the role for requesting to create a new organisation.',
+        'Role found is not the role for requesting to create a new organization.',
       );
     });
   });

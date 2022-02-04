@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import { ENSNamespaceTypes } from 'iam-client-lib';
+import { NamespaceType } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { IamService } from '../iam/iam.service';
 import { Logger } from '../logger/logger.service';
@@ -33,7 +33,7 @@ export class OrgCreatorController {
 
   @EventPattern('request-credential.claim-exchange.*.*')
   async createOrg(@Payload() message: ClaimRequestEventDto): Promise<boolean> {
-    this.logger.log(`Processing event recieved...`);
+    this.logger.log(`Processing event received...`);
     const requestObject = plainToClass(ClaimRequestEventDto, message);
     const errors = await validate(requestObject, {
       whitelist: true,
@@ -42,11 +42,13 @@ export class OrgCreatorController {
 
     if (errors.length > 0) {
       this.logger.log(
-        `Event Request recieved is not a claims creation event... skipping org creation event`,
+        `Event Request received is not a claims creation event... skipping org creation event`,
       );
       return;
     }
-    const { token, requester, id, registrationTypes } = message;
+
+    const { token, requester, id, registrationTypes } =
+      await this.iamService.getClaimById(requestObject.claimId);
 
     const { claimData } = jwt.decode(token) as IClaimToken;
 
@@ -61,24 +63,22 @@ export class OrgCreatorController {
         `Role found in claim request event ${claimData?.claimType} is not the role that is used to request a new organization, exiting org creation process.`,
       );
       throw new UnauthorizedException(
-        `Role found ${claimData?.claimType} is not the role for requesting to create a new organisation.`,
+        `Role found ${claimData?.claimType} is not the role for requesting to create a new organization.`,
       );
     }
 
-    await this.iamService.initializeIAM();
-
     this.logger.log('starting userHasOrgCheck validation');
     const userHasOrgCheck = await this.iamService.getENSTypesByOwner({
-      type: ENSNamespaceTypes.Organization,
+      type: NamespaceType.Organization,
       owner,
     });
 
     const orgName = claimData?.fields.find((x) => x.key === 'orgname').value;
 
     if (userHasOrgCheck?.length > 0) {
-      this.logger.error(`User ${owner} already has an existing organisation.`);
+      this.logger.error(`User ${owner} already has an existing organization.`);
       throw new BadRequestException(
-        `User ${owner} already has organisation created.`,
+        `User ${owner} already has organization created.`,
       );
     }
 
@@ -91,11 +91,11 @@ export class OrgCreatorController {
       namespace,
     };
 
-    this.logger.log('starting organisation creation process');
+    this.logger.log('starting organization creation process');
     // createOrg
     await this.iamService.createOrganization(createOrgData);
 
-    this.logger.log('starting organisation ownership change process');
+    this.logger.log('starting organization ownership change process');
 
     // transfer org to user
     await this.iamService.changeOrgOwnership({
@@ -113,7 +113,7 @@ export class OrgCreatorController {
       registrationTypes,
     });
 
-    this.logger.log('completed organisation creation process');
+    this.logger.log('completed organization creation process');
     return true;
   }
 }
