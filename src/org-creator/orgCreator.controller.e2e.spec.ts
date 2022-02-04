@@ -7,12 +7,7 @@ import { NamespaceType } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { IamService } from '../iam/iam.service';
 import { SentryService } from '../sentry/sentry.service';
-import {
-  claimTokenData,
-  createClaimRequest,
-  issueClaimRequest,
-  rejectClaimRequest,
-} from './mock/mock-data';
+import { claimTokenData, createClaimRequest } from './mock/mock-data';
 import { OrgCreatorController } from './orgCreator.controller';
 import { OrgCreatorService } from './orgCreator.service';
 
@@ -122,39 +117,11 @@ describe('OrgCreatorController ', () => {
   });
 
   afterEach(async () => {
-    await app.close();
-    await client.close();
+    await app?.close();
+    await client?.close();
   });
 
   describe('createOrg Event', () => {
-    it(`createOrg() should ignore rejectClaimRequest event`, async () => {
-      MockIamService.getClaimById.mockResolvedValueOnce(rejectClaimRequest);
-      const response = await client
-        .send('request-credential.claim-exchange.a.a', {
-          claimId: rejectClaimRequest.id,
-        })
-        .toPromise();
-
-      expect(response).toBe(undefined);
-      expect(MockLogger.log).toHaveBeenCalledWith(
-        'Event Request received is not a claims creation event... skipping org creation event',
-      );
-    }, 30000);
-
-    it(`createOrg() should ignore issueClaimRequest event`, async () => {
-      MockIamService.getClaimById.mockResolvedValueOnce(issueClaimRequest);
-      const response = await client
-        .send('request-credential.claim-exchange.a.a', {
-          claimId: issueClaimRequest.id,
-        })
-        .toPromise();
-
-      expect(response).toBe(undefined);
-      expect(MockLogger.log).toHaveBeenCalledWith(
-        'Event Request received is not a claims creation event... skipping org creation event',
-      );
-    }, 30000);
-
     it(`createOrg() should process createClaimRequest event`, async () => {
       const orgNameSpace = config.get('ORG_NAMESPACE');
       MockIamService.getClaimById.mockResolvedValueOnce(createClaimRequest);
@@ -166,7 +133,6 @@ describe('OrgCreatorController ', () => {
 
       expect(response).toBe(true);
       expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
-      expect(MockIamService.initializeIAM).toHaveBeenCalled();
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
         type: NamespaceType.Organization,
         owner: createClaimRequest.requester.split(':')[2],

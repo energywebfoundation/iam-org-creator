@@ -47,8 +47,13 @@ export class OrgCreatorController {
       return;
     }
 
-    const { token, requester, id, registrationTypes } =
+    const { token, requester, id, registrationTypes, isRejected } =
       await this.iamService.getClaimById(requestObject.claimId);
+
+    if (isRejected) {
+      this.logger.log(`claim ${id} is rejected... skipping org creation event`);
+      return;
+    }
 
     const { claimData } = jwt.decode(token) as IClaimToken;
 

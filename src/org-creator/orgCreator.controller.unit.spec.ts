@@ -91,7 +91,7 @@ describe('NATS transport', () => {
 
     controller = module.get<OrgCreatorController>(OrgCreatorController);
     config = module.get<ConfigService>(ConfigService);
-    MockIamService.getClaimById().mockResolvedValue(createClaimRequest);
+    MockIamService.getClaimById.mockResolvedValue(createClaimRequest);
   });
 
   describe('createOrg() event', () => {
@@ -102,7 +102,6 @@ describe('NATS transport', () => {
       const orgNameSpace = config.get('ORG_NAMESPACE');
 
       expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
-      expect(MockIamService.initializeIAM).toHaveBeenCalled();
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
         type: NamespaceType.Organization,
         owner: createClaimRequest.requester.split(':')[2],
@@ -135,7 +134,6 @@ describe('NATS transport', () => {
 
       expect(jwt.decode).toHaveBeenCalled();
       expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
-      expect(MockIamService.initializeIAM).toHaveBeenCalled();
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
         type: NamespaceType.Organization,
         owner,
