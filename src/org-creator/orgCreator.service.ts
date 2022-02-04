@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
 import { addressOf } from '@ew-did-registry/did-ethr-resolver';
+import { Injectable } from '@nestjs/common';
 import { Logger } from '../logger/logger.service';
 
 @Injectable()
