@@ -54,7 +54,14 @@ export class OrgCreatorController {
       return;
     }
 
-    const { token, isRejected, id, requester, registrationTypes } = claim;
+    const {
+      token,
+      isRejected,
+      id,
+      requester,
+      registrationTypes,
+      subjectAgreement,
+    } = claim;
 
     if (isRejected) {
       this.logger.log(`claim ${id} is rejected... skipping org creation event`);
@@ -126,7 +133,7 @@ export class OrgCreatorController {
       requester,
       token,
       id,
-      subjectAgreement: '',
+      subjectAgreement,
       registrationTypes,
     });
 
