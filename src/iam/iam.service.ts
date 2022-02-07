@@ -12,7 +12,7 @@ import { Logger } from '../logger/logger.service';
 @Injectable()
 export class IamService implements OnApplicationBootstrap {
   private domainsService: DomainsService;
-  private claimService: ClaimsService;
+  public claimService: ClaimsService;
 
   constructor(
     private readonly configService: ConfigService,
@@ -51,23 +51,31 @@ export class IamService implements OnApplicationBootstrap {
     this.logger.log(`IAM Service Initialized...`);
   }
 
-  get getENSTypesByOwner() {
-    return this.domainsService.getENSTypesByOwner;
+  async getENSTypesByOwner(
+    ...params: Parameters<DomainsService['getENSTypesByOwner']>
+  ) {
+    return this.domainsService.getENSTypesByOwner(params[0]);
   }
 
-  get getClaimById() {
-    return this.claimService.getClaimById;
+  async getClaimById(...params: Parameters<ClaimsService['getClaimById']>) {
+    return this.claimService.getClaimById(params[0]);
   }
 
-  get createOrganization() {
-    return this.domainsService.createOrganization;
+  async createOrganization(
+    ...params: Parameters<DomainsService['createOrganization']>
+  ) {
+    return this.domainsService.createOrganization(params[0]);
   }
 
-  get changeOrgOwnership() {
-    return this.domainsService.changeOrgOwnership;
+  async changeOrgOwnership(
+    ...params: Parameters<DomainsService['changeOrgOwnership']>
+  ) {
+    return this.domainsService.changeOrgOwnership(params[0]);
   }
 
-  get issueClaimRequest() {
-    return this.claimService.issueClaimRequest;
+  async issueClaimRequest(
+    ...params: Parameters<ClaimsService['issueClaimRequest']>
+  ) {
+    return this.claimService.issueClaimRequest(params[0]);
   }
 }

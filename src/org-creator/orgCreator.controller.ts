@@ -47,8 +47,14 @@ export class OrgCreatorController {
       return;
     }
 
-    const { token, requester, id, registrationTypes, isRejected } =
-      await this.iamService.getClaimById(requestObject.claimId);
+    const claim = await this.iamService.getClaimById(requestObject.claimId);
+
+    if (!claim) {
+      this.logger.log(`claim ${requestObject.claimId} not found...`);
+      return;
+    }
+
+    const { token, isRejected, id, requester, registrationTypes } = claim;
 
     if (isRejected) {
       this.logger.log(`claim ${id} is rejected... skipping org creation event`);
