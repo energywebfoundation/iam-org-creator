@@ -98,6 +98,7 @@ describe('NATS transport', () => {
     it(`createOrg() should receive claim request event and process it `, async () => {
       const request = await controller.createOrg({
         claimId: createClaimRequest.id,
+        type: '',
       });
       const orgNameSpace = config.get('ORG_NAMESPACE');
 
@@ -129,6 +130,7 @@ describe('NATS transport', () => {
       await expect(
         controller.createOrg({
           claimId: createClaimRequest.id,
+          type: '',
         }),
       ).rejects.toThrowError(`User ${owner} already has organization created.`);
 
@@ -147,6 +149,7 @@ describe('NATS transport', () => {
       await expect(
         controller.createOrg({
           claimId: createClaimRequest.id,
+          type: '',
         }),
       ).rejects.toThrowError(
         `Role found ${role} is not the role for requesting to create a new organization`,
@@ -164,6 +167,7 @@ describe('NATS transport', () => {
       await expect(
         controller.createOrg({
           claimId: createClaimRequest.id,
+          type: '',
         }),
       ).rejects.toThrowError(
         `Role found ${claimTokenData?.claimType} is not the role for requesting to create a new organization`,

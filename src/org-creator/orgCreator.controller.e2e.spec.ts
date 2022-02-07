@@ -128,6 +128,7 @@ describe('OrgCreatorController ', () => {
       const response = await client
         .send('request-credential.claim-exchange.a.a', {
           claimId: createClaimRequest.id,
+          type: 'createClaimRequest',
         })
         .toPromise();
 
@@ -163,7 +164,10 @@ describe('OrgCreatorController ', () => {
       MockIamService.getClaimById.mockResolvedValueOnce(createClaimRequest);
       expect(
         client
-          .send('request-credential.claim-exchange.a.a', createClaimRequest)
+          .send('request-credential.claim-exchange.a.a', {
+            claimId: createClaimRequest.id,
+            type: 'createClaimRequest',
+          })
           .toPromise(),
       ).rejects.toThrowError('User already has organization created.');
     });
@@ -173,7 +177,10 @@ describe('OrgCreatorController ', () => {
       MockIamService.getClaimById.mockResolvedValueOnce(createClaimRequest);
       expect(
         client
-          .send('request-credential.claim-exchange.a.a', createClaimRequest)
+          .send('request-credential.claim-exchange.a.a', {
+            claimId: createClaimRequest.id,
+            type: 'createClaimRequest',
+          })
           .toPromise(),
       ).rejects.toThrowError(
         'Role found is not the role for requesting to create a new organization.',
