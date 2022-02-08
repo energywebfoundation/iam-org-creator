@@ -100,23 +100,15 @@ export class OrgCreatorService {
       newOwner: owner,
     });
 
-    this.logger.log(
-      JSON.stringify({
-        requester,
-        token,
-        id,
-        subjectAgreement,
-        registrationTypes,
-      }),
-    );
     this.logger.log('starting issue claim request process');
     // send nats notification to user
     await this.iamService.issueClaimRequest({
       requester,
-      token,
       id,
-      subjectAgreement,
+      token,
       registrationTypes,
+      subjectAgreement,
+      publishOnChain: false,
     });
 
     this.logger.log('completed organization creation process');
