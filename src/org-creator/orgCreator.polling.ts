@@ -33,10 +33,7 @@ export class OrgCreatorPolling {
       (claim) => !claim.isRejected,
     );
 
-    this.logger.log(notRejectedRequests.toString());
-
     const pendingJobs = notRejectedRequests.map((request) => {
-      this.logger.log(`Processing claimId: ${request.id}`);
       return this.handlerService.handler(request.id);
     });
 
