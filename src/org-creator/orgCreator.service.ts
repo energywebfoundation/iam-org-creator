@@ -1,9 +1,5 @@
 import { addressOf } from '@ew-did-registry/did-ethr-resolver';
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NamespaceType } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
@@ -60,9 +56,7 @@ export class OrgCreatorService {
       this.logger.error(
         `Role found in claim request event ${claimData?.claimType} is not the role that is used to request a new organization, exiting org creation process.`,
       );
-      throw new UnauthorizedException(
-        `Role found ${claimData?.claimType} is not the role for requesting to create a new organization.`,
-      );
+      return;
     }
 
     this.logger.log('starting userHasOrgCheck validation');
@@ -76,14 +70,13 @@ export class OrgCreatorService {
       claimData?.requestorFields?.find((x) => x.key === 'orgname')?.value;
 
     if (!orgName) {
-      throw new BadRequestException('Org name is not found in claim');
+      this.logger.warn('No org name found in claim request event');
+      return;
     }
 
     if (userHasOrgCheck?.length > 0) {
       this.logger.error(`User ${owner} already has an existing organization.`);
-      throw new BadRequestException(
-        `User ${owner} already has organization created.`,
-      );
+      return;
     }
 
     const data = { orgName };
@@ -107,16 +100,6 @@ export class OrgCreatorService {
       newOwner: owner,
     });
 
-    this.logger.log('starting issue claim request process');
-    // send nats notification to user
-    await this.iamService.issueClaimRequest({
-      requester,
-      token,
-      id,
-      subjectAgreement,
-      registrationTypes,
-    });
-
     this.logger.log(
       JSON.stringify({
         requester,
@@ -126,6 +109,15 @@ export class OrgCreatorService {
         registrationTypes,
       }),
     );
+    this.logger.log('starting issue claim request process');
+    // send nats notification to user
+    await this.iamService.issueClaimRequest({
+      requester,
+      token,
+      id,
+      subjectAgreement,
+      registrationTypes,
+    });
 
     this.logger.log('completed organization creation process');
     return true;

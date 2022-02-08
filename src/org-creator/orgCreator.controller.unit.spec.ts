@@ -115,10 +115,11 @@ describe('NATS transport', () => {
       MockIamService.getENSTypesByOwner = jest
         .fn()
         .mockResolvedValueOnce([{ name: 'org' }]);
-      await expect(
-        controller.handler(createClaimRequest.id),
-      ).rejects.toThrowError(`User ${owner} already has organization created.`);
+      await controller.handler(createClaimRequest.id);
 
+      expect(MockLogger.error).toHaveBeenCalledWith(
+        `User ${owner} already has an existing organization.`,
+      );
       expect(jwt.decode).toHaveBeenCalled();
       expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
@@ -131,11 +132,8 @@ describe('NATS transport', () => {
       MockConfigService.get = jest.fn().mockResolvedValueOnce(chance.string());
       const role = claimTokenData.claimType;
 
-      await expect(
-        controller.handler(createClaimRequest.id),
-      ).rejects.toThrowError(
-        `Role found ${role} is not the role for requesting to create a new organization`,
-      );
+      await controller.handler(createClaimRequest.id);
+
       expect(MockLogger.error).toHaveBeenCalledTimes(1);
       expect(MockLogger.error).toBeCalledWith(
         `Role found in claim request event ${role} is not the role that is used to request a new organization, exiting org creation process.`,
@@ -146,12 +144,8 @@ describe('NATS transport', () => {
       delete claimTokenData.claimType;
       MockConfigService.get = jest.fn().mockResolvedValueOnce(null);
 
-      await expect(
-        controller.handler(createClaimRequest.id),
-      ).rejects.toThrowError(
-        `Role found ${claimTokenData?.claimType} is not the role for requesting to create a new organization`,
-      );
-      expect(MockLogger.error).toHaveBeenCalledTimes(1);
+      await controller.handler(createClaimRequest.id),
+        expect(MockLogger.error).toHaveBeenCalledTimes(1);
       expect(MockLogger.error).toBeCalledWith(
         `Role found in claim request event ${claimTokenData?.claimType} is not the role that is used to request a new organization, exiting org creation process.`,
       );

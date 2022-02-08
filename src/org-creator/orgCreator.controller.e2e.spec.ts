@@ -153,28 +153,30 @@ describe('OrgCreatorController ', () => {
         .fn()
         .mockResolvedValueOnce([{ name: 'org' }]);
       MockIamService.getClaimById.mockResolvedValueOnce(createClaimRequest);
-      expect(
-        client
-          .send('request-credential.claim-exchange.a.a', {
-            claimId: createClaimRequest.id,
-            type: 'createClaimRequest',
-          })
-          .toPromise(),
-      ).rejects.toThrowError('User already has organization created.');
+      await client
+        .send('request-credential.claim-exchange.a.a', {
+          claimId: createClaimRequest.id,
+          type: 'createClaimRequest',
+        })
+        .toPromise();
+      expect(MockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining('already has an existing organization.'),
+      );
     });
 
     it(`createOrg() should throw an error if role is not the role for requesting to create a new organization. `, async () => {
       MockConfigService.get = jest.fn().mockResolvedValueOnce(chance.string());
       MockIamService.getClaimById.mockResolvedValueOnce(createClaimRequest);
-      expect(
-        client
-          .send('request-credential.claim-exchange.a.a', {
-            claimId: createClaimRequest.id,
-            type: 'createClaimRequest',
-          })
-          .toPromise(),
-      ).rejects.toThrowError(
-        'Role found is not the role for requesting to create a new organization.',
+      await client
+        .send('request-credential.claim-exchange.a.a', {
+          claimId: createClaimRequest.id,
+          type: 'createClaimRequest',
+        })
+        .toPromise();
+      expect(MockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'is not the role that is used to request a new organization',
+        ),
       );
     });
   });
