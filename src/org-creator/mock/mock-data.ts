@@ -17,22 +17,22 @@ export const claimTokenData = {
 export const createClaimRequest = {
   id: chance.guid({ version: 4 }),
   token: 'qwertytokenvalue',
-  claimIssuer: [`did:ethr:${chance.hash({ length: 16 })}`],
-  requester: `did:ethr:${chance.hash({ length: 16 })}`,
+  claimIssuer: [`did:ethr:volta:0x${chance.hash({ length: 40 })}`],
+  requester: `did:ethr:volta:0x${chance.hash({ length: 40 })}`,
   registrationTypes: [RegistrationTypes.OnChain],
 };
 
 export const issueClaimRequest = {
   id: chance.guid({ version: 4 }),
   token: 'qwertytokenvalue',
-  requester: `did:ethr:${chance.hash({ length: 16 })}`,
+  requester: `did:ethr:volta:0x${chance.hash({ length: 40 })}`,
   subjectAgreement: '',
   registrationTypes: [RegistrationTypes.OnChain],
 };
 
 export const rejectClaimRequest = {
   id: chance.guid({ version: 4 }),
-  claimIssuer: [`did:ethr:${chance.hash({ length: 16 })}`],
-  requester: `did:ethr:${chance.hash({ length: 16 })}`,
+  claimIssuer: [`did:ethr:volta:0x${chance.hash({ length: 40 })}`],
+  requester: `did:ethr:volta:0x${chance.hash({ length: 40 })}`,
   isRejected: true,
 };

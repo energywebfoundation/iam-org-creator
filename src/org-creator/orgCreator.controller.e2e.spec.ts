@@ -47,12 +47,6 @@ const MockIamService = {
   getClaimById: jest.fn(),
 };
 
-const MockOrgCreatorService = {
-  extractAddressFromDID: jest.fn((key: string) => {
-    return key.split(':')[2];
-  }),
-};
-
 describe('OrgCreatorController ', () => {
   let app: INestApplication;
   let client: ClientProxy;
@@ -78,10 +72,7 @@ describe('OrgCreatorController ', () => {
           provide: ConfigService,
           useValue: MockConfigService,
         },
-        {
-          provide: OrgCreatorService,
-          useValue: MockOrgCreatorService,
-        },
+        OrgCreatorService,
         {
           provide: IamService,
           useValue: MockIamService,
@@ -136,7 +127,7 @@ describe('OrgCreatorController ', () => {
       expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
         type: NamespaceType.Organization,
-        owner: createClaimRequest.requester.split(':')[2],
+        owner: createClaimRequest.requester.split(':')[3],
       });
       expect(MockIamService.createOrganization).toHaveBeenCalledWith({
         orgName: claimTokenData.fields[0].value,
@@ -146,13 +137,13 @@ describe('OrgCreatorController ', () => {
         namespace: orgNameSpace,
       });
       expect(MockIamService.changeOrgOwnership).toHaveBeenCalledWith({
-        newOwner: createClaimRequest.requester.split(':')[2],
+        newOwner: createClaimRequest.requester.split(':')[3],
         namespace: `${claimTokenData.fields[0].value}.${orgNameSpace}`,
       });
       delete createClaimRequest.claimIssuer;
       expect(MockIamService.issueClaimRequest).toHaveBeenCalledWith({
         ...createClaimRequest,
-        ...{ subjectAgreement: '' },
+        ...{ subjectAgreement: undefined },
       });
       expect(response).toBe(true);
     }, 30000);

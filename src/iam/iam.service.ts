@@ -6,13 +6,15 @@ import {
   initWithPrivateKeySigner,
   setCacheConfig,
   setChainConfig,
+  SignerService,
 } from 'iam-client-lib';
 import { Logger } from '../logger/logger.service';
 
 @Injectable()
 export class IamService implements OnApplicationBootstrap {
   private domainsService: DomainsService;
-  public claimService: ClaimsService;
+  private claimService: ClaimsService;
+  private signerService: SignerService;
 
   constructor(
     private readonly configService: ConfigService,
@@ -37,16 +39,18 @@ export class IamService implements OnApplicationBootstrap {
   }
 
   async initializeIAM() {
-    const { connectToCacheServer } = await initWithPrivateKeySigner(
-      this.configService.get<string>('PRIVATE_KEY'),
-      this.configService.get<string>('RPC_URL'),
-    );
+    const { connectToCacheServer, signerService } =
+      await initWithPrivateKeySigner(
+        this.configService.get<string>('PRIVATE_KEY'),
+        this.configService.get<string>('RPC_URL'),
+      );
     const { connectToDidRegistry, domainsService } =
       await connectToCacheServer();
     const { claimsService } = await connectToDidRegistry();
 
     this.domainsService = domainsService;
     this.claimService = claimsService;
+    this.signerService = signerService;
 
     this.logger.log(`IAM Service Initialized...`);
   }
@@ -77,5 +81,15 @@ export class IamService implements OnApplicationBootstrap {
     ...params: Parameters<ClaimsService['issueClaimRequest']>
   ) {
     return this.claimService.issueClaimRequest(params[0]);
+  }
+
+  async getClaimsByIssuer(
+    ...params: Parameters<ClaimsService['getClaimsByIssuer']>
+  ) {
+    return this.claimService.getClaimsByIssuer(params[0]);
+  }
+
+  get did() {
+    return this.signerService.did;
   }
 }
