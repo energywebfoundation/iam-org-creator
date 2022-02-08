@@ -26,6 +26,7 @@ export class OrgCreatorService {
   }
 
   async handler(claimId: string): Promise<boolean> {
+    this.logger.log(`Processing claimId: ${claimId}`);
     const claim = await this.iamService.getClaimById(claimId);
 
     if (!claim) {
@@ -115,6 +116,16 @@ export class OrgCreatorService {
       subjectAgreement,
       registrationTypes,
     });
+
+    this.logger.log(
+      JSON.stringify({
+        requester,
+        token,
+        id,
+        subjectAgreement,
+        registrationTypes,
+      }),
+    );
 
     this.logger.log('completed organization creation process');
     return true;
