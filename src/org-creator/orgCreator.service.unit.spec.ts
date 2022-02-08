@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { IamService } from '../iam/iam.service';
 import { Logger } from '../logger/logger.service';
 import { OrgCreatorService } from './orgCreator.service';
 
@@ -22,6 +23,10 @@ describe('OrgCreatorService', () => {
         {
           provide: Logger,
           useValue: MockLogger,
+        },
+        {
+          provide: IamService,
+          useValue: {},
         },
       ],
     }).compile();

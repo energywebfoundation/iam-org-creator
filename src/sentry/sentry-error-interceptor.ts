@@ -15,8 +15,9 @@ export class SentryErrorInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap({
         error: (exception) => {
+          console.log(exception);
           const { withScope, captureException } =
-            this.sentryService.getSentry() || {};
+            this.sentryService?.getSentry() || {};
 
           if (!withScope || !captureException) return;
 
