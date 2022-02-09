@@ -143,7 +143,7 @@ describe('OrgCreatorController ', () => {
       delete createClaimRequest.claimIssuer;
       expect(MockIamService.issueClaimRequest).toHaveBeenCalledWith({
         ...createClaimRequest,
-        ...{ subjectAgreement: undefined },
+        ...{ subjectAgreement: undefined, publishOnChain: false },
       });
       expect(response).toBe(true);
     }, 30000);
