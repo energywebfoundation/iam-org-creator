@@ -29,6 +29,7 @@
     "@nestjs/microservices": "^7.6.17",
     "@nestjs/platform-express": "^7.6.15",
     "@nestjs/schedule": "^1.0.2",
+    "@nestjs/terminus": "^7.2.0",
     "@sentry/integrations": "^6.13.3",
     "@sentry/node": "^6.13.3",
     "@sentry/types": "^6.13.3",

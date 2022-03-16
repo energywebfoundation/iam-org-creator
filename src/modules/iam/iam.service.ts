@@ -4,6 +4,7 @@ import {
   ClaimsService,
   DomainsService,
   initWithPrivateKeySigner,
+  NamespaceType,
   setCacheConfig,
   setChainConfig,
   SignerService,
@@ -91,5 +92,20 @@ export class IamService implements OnApplicationBootstrap {
 
   get did() {
     return this.signerService.did;
+  }
+
+  async healthCheck() {
+    try {
+      const checks = await Promise.all([
+        this.signerService.balance(),
+        this.domainsService.getDefinition({
+          type: NamespaceType.Role,
+          namespace: this.configService.get('REQUEST_NEW_ORG_ROLE'),
+        }),
+      ]);
+      return checks.every(Boolean);
+    } catch {
+      return false;
+    }
   }
 }
