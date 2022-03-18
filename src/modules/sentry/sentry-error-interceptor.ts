@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Handlers } from '@sentry/node';
 import { tap } from 'rxjs/operators';
-import { SentryService } from '../sentry/sentry.service';
+import { SentryService } from './sentry.service';
 
 @Injectable()
 export class SentryErrorInterceptor implements NestInterceptor {
