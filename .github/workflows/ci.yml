@@ -2,7 +2,7 @@ name: ci
 
 on:
   pull_request:
-    branches: [ master, develop, DOI-1822_health_check]
+    branches: [ master, develop ]
 
 jobs:
   cancel-previous:

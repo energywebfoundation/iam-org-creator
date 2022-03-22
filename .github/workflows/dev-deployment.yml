@@ -2,7 +2,7 @@ name: Build and deploy
 
 on:
   push:
-    branches: [ master, develop, DOI-1822_health_check ]
+    branches: [ master, develop ]
 
 jobs:
   cancel-previous:
