@@ -35,6 +35,20 @@ spec:
             - name: http
               containerPort: {{ .Values.iamOrgCreator.config.NESTJS_PORT | default 9000 }}
               protocol: TCP
+          livenessProbe:
+            successThreshold: 1
+            failureThreshold: 10
+            timeoutSeconds: 20
+            httpGet:
+              path: /health/liveness
+              port: http
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 20
+            timeoutSeconds: 2
+            httpGet:
+              path: /health/readiness
+              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
