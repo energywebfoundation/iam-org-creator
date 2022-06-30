@@ -45,7 +45,7 @@ export class OrgCreatorService {
     }
 
     const { claimData } = jwt.decode(token) as IClaimToken;
-    this.logger.logger(`claim data decoded: ${JSON.stringify(claimData)}`);
+    this.logger.log(`claim data decoded: ${JSON.stringify(claimData)}`);
     const owner = this.extractAddressFromDID(requester);
 
     const requestNewOrgRole = this.configService.get<string>(
@@ -88,7 +88,11 @@ export class OrgCreatorService {
       namespace,
     };
 
-    this.logger.log(`starting organization creation process with org data: ${JSON.stringify(createOrgData)}`);
+    this.logger.log(
+      `starting organization creation process with org data: ${JSON.stringify(
+        createOrgData,
+      )}`,
+    );
     // createOrg
     await this.iamService.createOrganization(createOrgData);
 

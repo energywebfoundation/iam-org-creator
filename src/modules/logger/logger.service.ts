@@ -39,6 +39,10 @@ export class Logger extends NestLogger implements LoggerService {
     });
   }
 
+  setContext(ctx: string) {
+    this.context = ctx;
+  }
+
   error(error: any, trace?: string, context: string = this.context) {
     if (Array.isArray(error)) {
       this.logger.error(
