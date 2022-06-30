@@ -2,7 +2,7 @@ name: ci
 
 on:
   pull_request:
-    branches: [ master, develop ]
+    branches: [master, develop]
 
 jobs:
   cancel-previous:
@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [16.10.0]
     services:
       jetstream:
         image: synadia/jsm:latest

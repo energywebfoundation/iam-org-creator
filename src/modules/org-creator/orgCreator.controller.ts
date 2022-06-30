@@ -13,7 +13,7 @@ import { OrgCreatorService } from './orgCreator.service';
 export class OrgCreatorController {
   constructor(
     private readonly logger: Logger,
-    private orgcreatorService: OrgCreatorService,
+    private readonly orgCreatorService: OrgCreatorService,
   ) {
     this.logger.setContext(OrgCreatorController.name);
   }
@@ -34,6 +34,6 @@ export class OrgCreatorController {
       return;
     }
 
-    return await this.orgcreatorService.handler(message.claimId);
+    return await this.orgCreatorService.handler(message.claimId);
   }
 }

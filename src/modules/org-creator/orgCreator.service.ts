@@ -11,8 +11,8 @@ import { IClaimToken } from './orgCreator.type';
 export class OrgCreatorService {
   constructor(
     private readonly logger: Logger,
-    private iamService: IamService,
-    private configService: ConfigService,
+    private readonly iamService: IamService,
+    private readonly configService: ConfigService,
   ) {
     this.logger.setContext(OrgCreatorService.name);
   }
@@ -45,7 +45,7 @@ export class OrgCreatorService {
     }
 
     const { claimData } = jwt.decode(token) as IClaimToken;
-
+    this.logger.log(`claim data decoded: ${JSON.stringify(claimData)}`);
     const owner = this.extractAddressFromDID(requester);
 
     const requestNewOrgRole = this.configService.get<string>(
@@ -88,7 +88,11 @@ export class OrgCreatorService {
       namespace,
     };
 
-    this.logger.log('starting organization creation process');
+    this.logger.log(
+      `starting organization creation process with org data: ${JSON.stringify(
+        createOrgData,
+      )}`,
+    );
     // createOrg
     await this.iamService.createOrganization(createOrgData);
 
