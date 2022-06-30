@@ -1,10 +1,12 @@
-import { INestApplication, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { INestApplication } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { Chance } from 'chance';
 import { NamespaceType } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { IamService } from '../iam/iam.service';
+import { LoggerModule } from '../logger/logger.module';
+import { Logger } from '../logger/logger.service';
 import { SentryService } from '../sentry/sentry.service';
 import { claimTokenData } from './mock/mock-data';
 import { createClaimRequest } from './mock/mock-data';
@@ -49,7 +51,6 @@ const MockIamService = {
 describe('NATS transport', () => {
   let app: INestApplication;
   let controller: OrgCreatorService;
-  let config: ConfigService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -75,20 +76,25 @@ describe('NATS transport', () => {
           useValue: jest.fn(),
         },
       ],
+      imports: [
+        LoggerModule,
+        ConfigModule.forRoot({
+          isGlobal: true,
+        }),
+      ],
     }).compile();
 
     app = module.createNestApplication();
     await app.init();
 
     controller = module.get<OrgCreatorService>(OrgCreatorService);
-    config = module.get<ConfigService>(ConfigService);
     MockIamService.getClaimById.mockResolvedValue(createClaimRequest);
   });
 
   describe('createOrg() event', () => {
     it(`createOrg() should receive claim request event and process it `, async () => {
       const request = await controller.handler(createClaimRequest.id);
-      const orgNameSpace = config.get('ORG_NAMESPACE');
+      const orgNameSpace = 'iam.ewc';
 
       expect(jwt.decode).toHaveBeenCalledWith(createClaimRequest.token);
       expect(MockIamService.getENSTypesByOwner).toHaveBeenCalledWith({
@@ -96,15 +102,15 @@ describe('NATS transport', () => {
         owner: createClaimRequest.requester.split(':')[3],
       });
       expect(MockIamService.createOrganization).toHaveBeenCalledWith({
-        orgName: claimTokenData.fields[0].value,
+        orgName: claimTokenData.requestorFields[0].value,
         data: {
-          orgName: claimTokenData.fields[0].value,
+          orgName: claimTokenData.requestorFields[0].value,
         },
         namespace: orgNameSpace,
       });
       expect(MockIamService.changeOrgOwnership).toHaveBeenCalledWith({
         newOwner: createClaimRequest.requester.split(':')[3],
-        namespace: `${claimTokenData.fields[0].value}.${orgNameSpace}`,
+        namespace: `${claimTokenData.requestorFields[0].value}.${orgNameSpace}`,
       });
       expect(MockIamService.issueClaimRequest).toHaveBeenCalled();
       expect(request).toBe(true);

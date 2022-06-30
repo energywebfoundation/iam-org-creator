@@ -1,11 +1,13 @@
-import { INestApplication, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { INestApplication } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientProxy, ClientsModule, Transport } from '@nestjs/microservices';
 import { Test } from '@nestjs/testing';
 import { Chance } from 'chance';
 import { NamespaceType } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { IamService } from '../iam/iam.service';
+import { LoggerModule } from '../logger/logger.module';
+import { Logger } from '../logger/logger.service';
 import { SentryService } from '../sentry/sentry.service';
 import { claimTokenData, createClaimRequest } from './mock/mock-data';
 import { OrgCreatorController } from './orgCreator.controller';
@@ -50,22 +52,10 @@ const MockIamService = {
 describe('OrgCreatorController ', () => {
   let app: INestApplication;
   let client: ClientProxy;
-  let config: ConfigService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
     const module = await Test.createTestingModule({
-      imports: [
-        ClientsModule.register([
-          {
-            name: 'NATS_SERVICE',
-            transport: Transport.NATS,
-            options: {
-              url: 'nats://0.0.0.0:4222',
-            },
-          },
-        ]),
-      ],
       controllers: [OrgCreatorController],
       providers: [
         {
@@ -87,6 +77,21 @@ describe('OrgCreatorController ', () => {
           useValue: jest.fn(),
         },
       ],
+      imports: [
+        LoggerModule,
+        ConfigModule.forRoot({
+          isGlobal: true,
+        }),
+        ClientsModule.register([
+          {
+            name: 'NATS_SERVICE',
+            transport: Transport.NATS,
+            options: {
+              url: 'nats://0.0.0.0:4222',
+            },
+          },
+        ]),
+      ],
     }).compile();
 
     app = module.createNestApplication();
@@ -94,17 +99,15 @@ describe('OrgCreatorController ', () => {
     app.connectMicroservice({
       transport: Transport.NATS,
       options: {
-        url: 'nats://0.0.0.0:4222',
+        servers: ['nats://0.0.0.0:4222'],
       },
     });
 
-    await app.startAllMicroservicesAsync();
+    await app.startAllMicroservices();
     await app.init();
 
     client = app.get('NATS_SERVICE');
     await client.connect();
-
-    config = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(async () => {
@@ -114,7 +117,7 @@ describe('OrgCreatorController ', () => {
 
   describe('createOrg Event', () => {
     it(`createOrg() should process createClaimRequest event`, async () => {
-      const orgNameSpace = config.get('ORG_NAMESPACE');
+      const orgNameSpace = 'iam.ewc';
       MockIamService.getClaimById.mockResolvedValueOnce(createClaimRequest);
       const response = await client
         .send('request-credential.claim-exchange.a.a', {
@@ -130,15 +133,15 @@ describe('OrgCreatorController ', () => {
         owner: createClaimRequest.requester.split(':')[3],
       });
       expect(MockIamService.createOrganization).toHaveBeenCalledWith({
-        orgName: claimTokenData.fields[0].value,
+        orgName: claimTokenData.requestorFields[0].value,
         data: {
-          orgName: claimTokenData.fields[0].value,
+          orgName: claimTokenData.requestorFields[0].value,
         },
         namespace: orgNameSpace,
       });
       expect(MockIamService.changeOrgOwnership).toHaveBeenCalledWith({
         newOwner: createClaimRequest.requester.split(':')[3],
-        namespace: `${claimTokenData.fields[0].value}.${orgNameSpace}`,
+        namespace: `${claimTokenData.requestorFields[0].value}.${orgNameSpace}`,
       });
       delete createClaimRequest.claimIssuer;
       expect(MockIamService.issueClaimRequest).toHaveBeenCalledWith({

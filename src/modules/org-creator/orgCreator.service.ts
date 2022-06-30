@@ -11,8 +11,8 @@ import { IClaimToken } from './orgCreator.type';
 export class OrgCreatorService {
   constructor(
     private readonly logger: Logger,
-    private iamService: IamService,
-    private configService: ConfigService,
+    private readonly iamService: IamService,
+    private readonly configService: ConfigService,
   ) {
     this.logger.setContext(OrgCreatorService.name);
   }

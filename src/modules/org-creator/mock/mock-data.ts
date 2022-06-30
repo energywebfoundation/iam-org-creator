@@ -4,7 +4,7 @@ import { RegistrationTypes } from 'iam-client-lib';
 const chance = new Chance();
 
 export const claimTokenData = {
-  fields: [
+  requestorFields: [
     {
       key: 'orgname',
       value: 'mctesty',

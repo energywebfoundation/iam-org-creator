@@ -1,7 +1,6 @@
-import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Transport } from '@nestjs/microservices';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as dotenv from 'dotenv';
 import { AppModule } from './app';
@@ -14,14 +13,14 @@ async function bootstrap() {
   app.connectMicroservice({
     transport: Transport.NATS,
     options: {
-      url: process.env.NATS_CLIENTS_URL,
+      servers: [process.env.NATS_CLIENTS_URL],
       ...natsConfig,
     },
   });
 
   const configService = app.get(ConfigService);
 
-  await app.startAllMicroservicesAsync();
+  await app.startAllMicroservices();
   await app.listen(configService.get('NESTJS_PORT'));
 }
 

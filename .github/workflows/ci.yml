@@ -42,8 +42,8 @@ jobs:
         run: npm ci
       - name: Check linting
         run: npm run lint
-      # - name: Audit package dependencies
-      #   run: npm audit --audit-level=critical
+      - name: Audit package dependencies
+        run: npm audit --audit-level=critical
       - name: Build project
         run: npm run build
       - name: Create Nats cluster
