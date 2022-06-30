@@ -13,9 +13,13 @@ COPY docker ./docker
 
 RUN chmod +x ./docker/node-modules-clean.sh
 
-RUN npm ci && npm cache clean --force && \
-  ./docker/node-modules-clean.sh && \
-  npm dedupe && \
-  rm -f .npmrc
+RUN npm ci 
 
-ENTRYPOINT npm run start:dev
+RUN npm cache clean --force
+RUN ./docker/node-modules-clean.sh 
+RUN npm dedupe
+RUN rm -f .npmrc
+
+RUN npm run build
+
+ENTRYPOINT node dist/main.js
