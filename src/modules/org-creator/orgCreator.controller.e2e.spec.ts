@@ -47,6 +47,7 @@ const MockIamService = {
   changeOrgOwnership: jest.fn(),
   issueClaimRequest: jest.fn(),
   getClaimById: jest.fn(),
+  rejectClaimRequest: jest.fn(),
 };
 
 describe('OrgCreatorController ', () => {
