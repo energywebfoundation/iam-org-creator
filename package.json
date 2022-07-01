@@ -37,7 +37,7 @@
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "dotenv": "^8.2.0",
-    "iam-client-lib": "^6.0.0-alpha.25",
+    "iam-client-lib": "^6.0.0-alpha.27",
     "jsonwebtoken": "^8.5.1",
     "nats": "^2.7.1",
     "npm-run-all": "^4.1.5",
