@@ -21,6 +21,10 @@ export class OrgCreatorService {
     return addressOf(didString);
   }
 
+  isValidOrgName(orgName: string): boolean {
+    return /^[a-z]+$/.test(orgName);
+  }
+
   async handler(claimId: string): Promise<boolean> {
     this.logger.log(`Processing claimId: ${claimId}`);
     const claim = await this.iamService.getClaimById(claimId);
@@ -65,17 +69,38 @@ export class OrgCreatorService {
       owner,
     });
 
-    const orgName =
+    let orgName =
       claimData?.fields?.find((x) => x.key === 'orgname')?.value ||
       claimData?.requestorFields?.find((x) => x.key === 'orgname')?.value;
+    orgName = orgName?.toLowerCase();
 
     if (!orgName) {
       this.logger.warn('No org name found in claim request event');
+      this.iamService.rejectClaimRequest({
+        id: claimId,
+        requesterDID: requester,
+        rejectionReason: 'No org name found in claim request event',
+      });
+      return;
+    }
+
+    if (!this.isValidOrgName(orgName)) {
+      this.logger.warn(`Org name ${orgName} is not valid`);
+      this.iamService.rejectClaimRequest({
+        id: claimId,
+        requesterDID: requester,
+        rejectionReason: `Org name ${orgName} is not valid`,
+      });
       return;
     }
 
     if (userHasOrgCheck?.length > 0) {
       this.logger.error(`User ${owner} already has an existing organization.`);
+      this.iamService.rejectClaimRequest({
+        id: claimId,
+        requesterDID: requester,
+        rejectionReason: `User ${owner} already has an existing organization.`,
+      });
       return;
     }
 
