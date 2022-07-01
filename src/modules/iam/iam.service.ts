@@ -84,6 +84,12 @@ export class IamService implements OnApplicationBootstrap {
     return this.claimService.issueClaimRequest(params[0]);
   }
 
+  async rejectClaimRequest(
+    ...params: Parameters<ClaimsService['rejectClaimRequest']>
+  ) {
+    return this.claimService.rejectClaimRequest(params[0]);
+  }
+
   async getClaimsByIssuer(
     ...params: Parameters<ClaimsService['getClaimsByIssuer']>
   ) {

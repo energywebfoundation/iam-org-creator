@@ -24,6 +24,7 @@ jest.mock('jsonwebtoken', () => ({
 const chance = new Chance();
 const MockLogger = {
   log: jest.fn(),
+  warn: jest.fn(),
   error: jest.fn(),
   setContext: jest.fn(),
 };
@@ -46,6 +47,7 @@ const MockIamService = {
   changeOrgOwnership: jest.fn(),
   issueClaimRequest: jest.fn(),
   getClaimById: jest.fn(),
+  rejectClaimRequest: jest.fn(),
 };
 
 describe('NATS transport', () => {
@@ -116,6 +118,16 @@ describe('NATS transport', () => {
       expect(request).toBe(true);
     });
 
+    it(`createOrg() should throw an error when orgName is not valid`, async () => {
+      claimTokenData.requestorFields[0].value = 'BAD_ORG_NAME1!';
+      await controller.handler(createClaimRequest.id);
+      expect(MockLogger.warn).toBeCalledWith(
+        `Org name bad_org_name1! is not valid`,
+      );
+      expect(MockIamService.rejectClaimRequest).toHaveBeenCalled();
+      claimTokenData.requestorFields[0].value = 'mctesty';
+    });
+
     it(`createOrg() should throw an error if user already has existing org `, async () => {
       const owner = createClaimRequest.requester.split(':')[3];
       MockIamService.getENSTypesByOwner = jest
@@ -150,8 +162,8 @@ describe('NATS transport', () => {
       delete claimTokenData.claimType;
       MockConfigService.get = jest.fn().mockResolvedValueOnce(null);
 
-      await controller.handler(createClaimRequest.id),
-        expect(MockLogger.error).toHaveBeenCalledTimes(1);
+      await controller.handler(createClaimRequest.id);
+      expect(MockLogger.error).toHaveBeenCalledTimes(1);
       expect(MockLogger.error).toBeCalledWith(
         `Role found in claim request event ${claimTokenData?.claimType} is not the role that is used to request a new organization, exiting org creation process.`,
       );

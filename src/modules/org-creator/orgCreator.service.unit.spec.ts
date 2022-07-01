@@ -48,4 +48,15 @@ describe('OrgCreatorService', () => {
       '0x39579900f9d60819fd5521a9aC044a1B2a849DC6',
     );
   });
+
+  it('isValidOrgName(), should be truthy', () => {
+    expect(service.isValidOrgName('neworg')).toBeTruthy();
+  });
+
+  it('isValidOrgName(), should be falsy', () => {
+    expect(service.isValidOrgName('neworg1')).toBeFalsy();
+    expect(service.isValidOrgName('neworg!')).toBeFalsy();
+    expect(service.isValidOrgName('123123123')).toBeFalsy();
+    expect(service.isValidOrgName('NEW_ORG')).toBeFalsy();
+  });
 });
