@@ -1,6 +1,7 @@
 import { addressOf } from '@ew-did-registry/did-ethr-resolver';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import AsyncLock = require('async-lock');
 import { NamespaceType } from 'iam-client-lib';
 import * as jwt from 'jsonwebtoken';
 import { IamService } from '../iam/iam.service';
@@ -9,12 +10,15 @@ import { IClaimToken } from './orgCreator.type';
 
 @Injectable()
 export class OrgCreatorService {
+  private readonly createOrgLock: AsyncLock;
+
   constructor(
     private readonly logger: Logger,
     private readonly iamService: IamService,
     private readonly configService: ConfigService,
   ) {
     this.logger.setContext(OrgCreatorService.name);
+    this.createOrgLock = new AsyncLock();
   }
 
   extractAddressFromDID(didString: string): string {
@@ -113,31 +117,33 @@ export class OrgCreatorService {
       namespace,
     };
 
-    this.logger.log(
-      `starting organization creation process with org data: ${JSON.stringify(
-        createOrgData,
-      )}`,
-    );
-    // createOrg
-    await this.iamService.createOrganization(createOrgData);
+    await this.createOrgLock.acquire('key', async () => {
+      this.logger.log(
+        `starting organization creation process with org data: ${JSON.stringify(
+          createOrgData,
+        )}`,
+      );
+      // createOrg
+      await this.iamService.createOrganization(createOrgData);
 
-    this.logger.log('starting organization ownership change process');
+      this.logger.log('starting organization ownership change process');
 
-    // transfer org to user
-    await this.iamService.changeOrgOwnership({
-      namespace: `${orgName}.${namespace}`,
-      newOwner: owner,
-    });
+      // transfer org to user
+      await this.iamService.changeOrgOwnership({
+        namespace: `${orgName}.${namespace}`,
+        newOwner: owner,
+      });
 
-    this.logger.log('starting issue claim request process');
-    // send nats notification to user
-    await this.iamService.issueClaimRequest({
-      requester,
-      id,
-      token,
-      registrationTypes,
-      subjectAgreement,
-      publishOnChain: false,
+      this.logger.log('starting issue claim request process');
+      // send nats notification to user
+      await this.iamService.issueClaimRequest({
+        requester,
+        id,
+        token,
+        registrationTypes,
+        subjectAgreement,
+        publishOnChain: false,
+      });
     });
 
     this.logger.log('completed organization creation process');
