@@ -3,13 +3,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '../logger/logger.service';
 import { IamService } from './iam.service';
 
-let blockchainInUse: boolean;
-
 const MockLogger = {
   log: jest.fn(),
   setContext: jest.fn(),
 };
 
+let blockchainInUse: boolean;
+const blockChainTxMillis = 10;
 const blockchainTx = () => {
   expect(blockchainInUse).toBeFalsy();
   blockchainInUse = true;
@@ -17,7 +17,7 @@ const blockchainTx = () => {
     setTimeout(() => {
       blockchainInUse = false;
       resolve('');
-    }, 100);
+    }, blockChainTxMillis);
   });
 };
 
@@ -47,6 +47,7 @@ describe('IAM Service', () => {
   let service: IamService;
 
   beforeEach(async () => {
+    blockchainInUse = false;
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         IamService,
@@ -68,13 +69,12 @@ describe('IAM Service', () => {
   });
 
   /**
-   * An account can only do a transaction on a blockchain at a time.
+   * An account can only execute one transaction on a blockchain at a time.
    * Therefore, IAM service methods with update blockchain state should be executed in sequence,
    * even if initiation of the methods is done concurrently
    */
   describe('blockchain non-concurrency', () => {
-    it(`concurrent calls to changeOrganizationOwnership should be handled in sequence`, async () => {
-      blockchainInUse = false;
+    it(`should execute concurrent calls to changeOrganizationOwnership in sequence`, async () => {
       const blockchainOperations = ['1', '2'].map((newOwner) => {
         return service.changeOrgOwnership({
           namespace: '',
@@ -84,8 +84,7 @@ describe('IAM Service', () => {
       await Promise.all(blockchainOperations);
     });
 
-    it(`concurrent calls to createOrganization should be handled in sequence`, async () => {
-      blockchainInUse = false;
+    it(`should execute concurrent calls to createOrganization in sequence`, async () => {
       const blockchainOperations = ['1', '2'].map((orgName) => {
         return service.createOrganization({
           orgName,
@@ -93,6 +92,22 @@ describe('IAM Service', () => {
           data: undefined,
         });
       });
+      await Promise.all(blockchainOperations);
+    });
+
+    it(`should execute a call to createOrganization that is concurrent to a changeOrgOwnership in sequence`, async () => {
+      const blockchainOperations = [];
+      blockchainOperations.push(
+        service.createOrganization({
+          orgName: 'newOrg',
+          namespace: '',
+          data: undefined,
+        }),
+        service.changeOrgOwnership({
+          namespace: '',
+          newOwner: 'newOwner',
+        }),
+      );
       await Promise.all(blockchainOperations);
     });
   });
