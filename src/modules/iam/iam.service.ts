@@ -1,5 +1,6 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import AsyncLock = require('async-lock');
 import {
   ClaimsService,
   DomainsService,
@@ -16,6 +17,7 @@ export class IamService implements OnApplicationBootstrap {
   private domainsService: DomainsService;
   private claimService: ClaimsService;
   private signerService: SignerService;
+  private readonly createOrgLock: AsyncLock;
 
   constructor(
     private readonly configService: ConfigService,
@@ -33,6 +35,8 @@ export class IamService implements OnApplicationBootstrap {
     setChainConfig(voltaChainId, {
       rpcUrl: configService.get<string>('RPC_URL'),
     });
+
+    this.createOrgLock = new AsyncLock();
   }
 
   async onApplicationBootstrap() {
@@ -69,13 +73,17 @@ export class IamService implements OnApplicationBootstrap {
   async createOrganization(
     ...params: Parameters<DomainsService['createOrganization']>
   ) {
-    return this.domainsService.createOrganization(params[0]);
+    // await this.createOrgLock.acquire('blockchainModification', async () => {
+      await this.domainsService.createOrganization(params[0]);
+    // });
   }
 
   async changeOrgOwnership(
     ...params: Parameters<DomainsService['changeOrgOwnership']>
   ) {
-    return this.domainsService.changeOrgOwnership(params[0]);
+    await this.createOrgLock.acquire('blockchainModification', async () => {
+      return this.domainsService.changeOrgOwnership(params[0]);
+    });
   }
 
   async issueClaimRequest(
