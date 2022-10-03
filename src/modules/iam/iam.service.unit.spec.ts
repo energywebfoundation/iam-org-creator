@@ -95,7 +95,7 @@ describe('IAM Service', () => {
       await Promise.all(blockchainOperations);
     });
 
-    it(`should execute a call to createOrganization that is concurrent to a changeOrgOwnership in sequence`, async () => {
+    it(`should execute in sequences calls to createOrganization and changeOrgOwnership`, async () => {
       const blockchainOperations = [];
       blockchainOperations.push(
         service.createOrganization({
