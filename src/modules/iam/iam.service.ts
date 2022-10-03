@@ -73,16 +73,32 @@ export class IamService implements OnApplicationBootstrap {
   async createOrganization(
     ...params: Parameters<DomainsService['createOrganization']>
   ) {
+    const createOrgParams = params[0];
+    this.logger.log(`starting createOrg for org ${createOrgParams.namespace}`);
     await this.createOrgLock.acquire('blockchainModification', async () => {
+      this.logger.log(
+        `acquired lock for createOrg for org ${createOrgParams.namespace}`,
+      );
       await this.domainsService.createOrganization(params[0]);
+      this.logger.log(`created org ${createOrgParams.namespace}`);
     });
   }
 
   async changeOrgOwnership(
     ...params: Parameters<DomainsService['changeOrgOwnership']>
   ) {
+    const changeOrgOwnerParams = params[0];
+    this.logger.log(
+      `starting changeOrgOwnership of org ${changeOrgOwnerParams.namespace} to owner ${changeOrgOwnerParams.newOwner}`,
+    );
     await this.createOrgLock.acquire('blockchainModification', async () => {
-      return this.domainsService.changeOrgOwnership(params[0]);
+      this.logger.log(
+        `acquired lock for changeOrgOwnership of org ${changeOrgOwnerParams.namespace} to owner ${changeOrgOwnerParams.newOwner}`,
+      );
+      await this.domainsService.changeOrgOwnership(params[0]);
+      this.logger.log(
+        `changed OrgOwnership of org ${changeOrgOwnerParams.namespace} to owner ${changeOrgOwnerParams.newOwner}`,
+      );
     });
   }
 
