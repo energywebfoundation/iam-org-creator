@@ -4,8 +4,7 @@ import { Logger } from '../logger/logger.service';
 import { IamService } from './iam.service';
 
 const MockLogger = {
-  // log: jest.fn(),
-  log: (message) => console.log(message),
+  log: jest.fn(),
   setContext: jest.fn(),
 };
 
@@ -75,13 +74,14 @@ describe('IAM Service', () => {
         }, blockChainTxDurationMillis);
       });
     };
+    const txFailedError = new Error('failed from timeout');
     const failedBlockchainTx = () => {
       expect(blockchainInUse).toBeFalsy();
       blockchainInUse = true;
       return new Promise((_, reject) => {
         setTimeout(() => {
           blockchainInUse = false;
-          reject('');
+          reject(txFailedError);
         }, blockChainTxDurationMillis);
       });
     };
@@ -129,21 +129,19 @@ describe('IAM Service', () => {
       await Promise.all(blockchainOperations);
     });
 
-    it(`should be able to acquire lock if holder execution fails`, async () => {
+    it(`should be able to acquire lock if execution of lock holder fails`, async () => {
       domainsService.createOrganization.mockImplementation(failedBlockchainTx);
-      const blockchainOperations = [];
-      blockchainOperations.push(
-        service.createOrganization({
-          orgName: 'newOrg',
-          namespace: '',
-          data: undefined,
-        }),
-        service.changeOrgOwnership({
-          namespace: '',
-          newOwner: 'newOwner',
-        }),
-      );
-      await Promise.all(blockchainOperations);
+      const failingTx = service.createOrganization({
+        orgName: 'newOrg',
+        namespace: '',
+        data: undefined,
+      });
+      const successfulTx = service.changeOrgOwnership({
+        namespace: '',
+        newOwner: 'newOwner',
+      });
+      await expect(failingTx).rejects.toThrow(txFailedError);
+      await expect(successfulTx).resolves.toBe(undefined);
     });
   });
 });
