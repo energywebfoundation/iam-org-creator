@@ -64,22 +64,20 @@ describe('IAM Service', () => {
     await service.initializeIAM();
   });
 
-  describe('blockchain concurrency', () => {
+  /**
+   * An account can only do a transaction on a blockchain at a time.
+   * Therefore, IAM service methods with update blockchain state should be executed in sequence,
+   * even if initiation of the methods is done concurrently
+   */
+  describe('blockchain non-concurrency', () => {
     it(`concurrent calls to createOrganization should be handled in sequence`, async () => {
       blockchainInUse = false;
-      const blockchainOperations = [];
-      blockchainOperations.push(
-        service.changeOrgOwnership({
+      const blockchainOperations = ['1', '2'].map((newOwner) => {
+        return service.changeOrgOwnership({
           namespace: '',
-          newOwner: 'owner1',
-        }),
-      );
-      blockchainOperations.push(
-        service.changeOrgOwnership({
-          namespace: '',
-          newOwner: 'owner2',
-        }),
-      );
+          newOwner,
+        });
+      });
       await Promise.all(blockchainOperations);
       expect(true).toBeTruthy();
     });
