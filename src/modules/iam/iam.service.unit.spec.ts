@@ -10,6 +10,17 @@ const MockLogger = {
   setContext: jest.fn(),
 };
 
+const blockchainTx = () => {
+  expect(blockchainInUse).toBeFalsy();
+  blockchainInUse = true;
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      blockchainInUse = false;
+      resolve('');
+    }, 100);
+  });
+};
+
 jest.mock('iam-client-lib', () => ({
   setCacheConfig: jest.fn(),
   setChainConfig: jest.fn(),
@@ -18,16 +29,8 @@ jest.mock('iam-client-lib', () => ({
       connectToCacheServer: jest.fn().mockImplementation(() => {
         return {
           domainsService: {
-            changeOrgOwnership: () => {
-              expect(blockchainInUse).toBeFalsy();
-              blockchainInUse = true;
-              return new Promise((resolve) => {
-                setTimeout(() => {
-                  blockchainInUse = false;
-                  resolve('');
-                }, 100);
-              });
-            },
+            changeOrgOwnership: blockchainTx,
+            createOrganization: blockchainTx,
           },
           connectToDidRegistry: jest.fn().mockImplementation(() => {
             return {
@@ -70,7 +73,7 @@ describe('IAM Service', () => {
    * even if initiation of the methods is done concurrently
    */
   describe('blockchain non-concurrency', () => {
-    it(`concurrent calls to createOrganization should be handled in sequence`, async () => {
+    it(`concurrent calls to changeOrganizationOwnership should be handled in sequence`, async () => {
       blockchainInUse = false;
       const blockchainOperations = ['1', '2'].map((newOwner) => {
         return service.changeOrgOwnership({
@@ -79,7 +82,18 @@ describe('IAM Service', () => {
         });
       });
       await Promise.all(blockchainOperations);
-      expect(true).toBeTruthy();
+    });
+
+    it(`concurrent calls to createOrganization should be handled in sequence`, async () => {
+      blockchainInUse = false;
+      const blockchainOperations = ['1', '2'].map((orgName) => {
+        return service.createOrganization({
+          orgName,
+          namespace: '',
+          data: undefined,
+        });
+      });
+      await Promise.all(blockchainOperations);
     });
   });
 });

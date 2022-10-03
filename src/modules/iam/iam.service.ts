@@ -73,9 +73,9 @@ export class IamService implements OnApplicationBootstrap {
   async createOrganization(
     ...params: Parameters<DomainsService['createOrganization']>
   ) {
-    // await this.createOrgLock.acquire('blockchainModification', async () => {
+    await this.createOrgLock.acquire('blockchainModification', async () => {
       await this.domainsService.createOrganization(params[0]);
-    // });
+    });
   }
 
   async changeOrgOwnership(
