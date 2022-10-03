@@ -12,6 +12,8 @@ import {
 } from 'iam-client-lib';
 import { Logger } from '../logger/logger.service';
 
+const blockchainTxLockKey = 'blockchainModification';
+
 @Injectable()
 export class IamService implements OnApplicationBootstrap {
   private domainsService: DomainsService;
@@ -84,7 +86,7 @@ export class IamService implements OnApplicationBootstrap {
   ) {
     const createOrgParams = params[0];
     this.logger.log(`starting createOrg for org ${createOrgParams.namespace}`);
-    await this.blockchainTxLock.acquire('blockchainModification', async () => {
+    await this.blockchainTxLock.acquire(blockchainTxLockKey, async () => {
       this.logger.log(
         `acquired lock for createOrg for org ${createOrgParams.namespace}`,
       );
@@ -100,7 +102,7 @@ export class IamService implements OnApplicationBootstrap {
     this.logger.log(
       `starting changeOrgOwnership of org ${changeOrgOwnerParams.namespace} to owner ${changeOrgOwnerParams.newOwner}`,
     );
-    await this.blockchainTxLock.acquire('blockchainModification', async () => {
+    await this.blockchainTxLock.acquire(blockchainTxLockKey, async () => {
       this.logger.log(
         `acquired lock for changeOrgOwnership of org ${changeOrgOwnerParams.namespace} to owner ${changeOrgOwnerParams.newOwner}`,
       );
