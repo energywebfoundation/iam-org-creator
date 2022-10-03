@@ -17,7 +17,7 @@ export class IamService implements OnApplicationBootstrap {
   private domainsService: DomainsService;
   private claimService: ClaimsService;
   private signerService: SignerService;
-  private readonly createOrgLock: AsyncLock;
+  private readonly blockchainTxLock: AsyncLock;
 
   constructor(
     private readonly configService: ConfigService,
@@ -36,7 +36,16 @@ export class IamService implements OnApplicationBootstrap {
       rpcUrl: configService.get<string>('RPC_URL'),
     });
 
-    this.createOrgLock = new AsyncLock();
+    // Timeout - max amount of time an item can remain in the queue before acquiring the lock
+    // Volta/EWC block times are about 5 seconds.
+    const blockchainTxQueueTimeoutMillis =
+      configService.get<number>('CHAIN_TX_QUEUE_TIMEOUT') ?? 30000;
+    this.logger.log(
+      `blockchain transaction queue timeout configured to ${blockchainTxQueueTimeoutMillis}`,
+    );
+    this.blockchainTxLock = new AsyncLock({
+      timeout: blockchainTxQueueTimeoutMillis,
+    });
   }
 
   async onApplicationBootstrap() {
@@ -75,7 +84,7 @@ export class IamService implements OnApplicationBootstrap {
   ) {
     const createOrgParams = params[0];
     this.logger.log(`starting createOrg for org ${createOrgParams.namespace}`);
-    await this.createOrgLock.acquire('blockchainModification', async () => {
+    await this.blockchainTxLock.acquire('blockchainModification', async () => {
       this.logger.log(
         `acquired lock for createOrg for org ${createOrgParams.namespace}`,
       );
@@ -91,7 +100,7 @@ export class IamService implements OnApplicationBootstrap {
     this.logger.log(
       `starting changeOrgOwnership of org ${changeOrgOwnerParams.namespace} to owner ${changeOrgOwnerParams.newOwner}`,
     );
-    await this.createOrgLock.acquire('blockchainModification', async () => {
+    await this.blockchainTxLock.acquire('blockchainModification', async () => {
       this.logger.log(
         `acquired lock for changeOrgOwnership of org ${changeOrgOwnerParams.namespace} to owner ${changeOrgOwnerParams.newOwner}`,
       );
