@@ -4,21 +4,14 @@ import { Logger } from '../logger/logger.service';
 import { IamService } from './iam.service';
 
 const MockLogger = {
-  log: jest.fn(),
+  // log: jest.fn(),
+  log: (message) => console.log(message),
   setContext: jest.fn(),
 };
 
-let blockchainInUse: boolean;
-const blockChainTxMillis = 10;
-const blockchainTx = () => {
-  expect(blockchainInUse).toBeFalsy();
-  blockchainInUse = true;
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      blockchainInUse = false;
-      resolve('');
-    }, blockChainTxMillis);
-  });
+const domainsService = {
+  changeOrgOwnership: jest.fn(),
+  createOrganization: jest.fn(),
 };
 
 jest.mock('iam-client-lib', () => ({
@@ -28,10 +21,7 @@ jest.mock('iam-client-lib', () => ({
     return {
       connectToCacheServer: jest.fn().mockImplementation(() => {
         return {
-          domainsService: {
-            changeOrgOwnership: blockchainTx,
-            createOrganization: blockchainTx,
-          },
+          domainsService,
           connectToDidRegistry: jest.fn().mockImplementation(() => {
             return {
               claimsService: jest.fn(),
@@ -47,7 +37,6 @@ describe('IAM Service', () => {
   let service: IamService;
 
   beforeEach(async () => {
-    blockchainInUse = false;
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         IamService,
@@ -74,6 +63,35 @@ describe('IAM Service', () => {
    * even if initiation of the methods is done concurrently
    */
   describe('blockchain non-concurrency', () => {
+    let blockchainInUse: boolean;
+    const blockChainTxDurationMillis = 10;
+    const blockchainTx = () => {
+      expect(blockchainInUse).toBeFalsy();
+      blockchainInUse = true;
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          blockchainInUse = false;
+          resolve('');
+        }, blockChainTxDurationMillis);
+      });
+    };
+    const failedBlockchainTx = () => {
+      expect(blockchainInUse).toBeFalsy();
+      blockchainInUse = true;
+      return new Promise((_, reject) => {
+        setTimeout(() => {
+          blockchainInUse = false;
+          reject('');
+        }, blockChainTxDurationMillis);
+      });
+    };
+
+    beforeEach(() => {
+      blockchainInUse = false;
+      domainsService.changeOrgOwnership.mockImplementation(blockchainTx);
+      domainsService.createOrganization.mockImplementation(blockchainTx);
+    });
+
     it(`should execute concurrent calls to changeOrganizationOwnership in sequence`, async () => {
       const blockchainOperations = ['1', '2'].map((newOwner) => {
         return service.changeOrgOwnership({
@@ -96,6 +114,23 @@ describe('IAM Service', () => {
     });
 
     it(`should execute in sequences calls to createOrganization and changeOrgOwnership`, async () => {
+      const blockchainOperations = [];
+      blockchainOperations.push(
+        service.createOrganization({
+          orgName: 'newOrg',
+          namespace: '',
+          data: undefined,
+        }),
+        service.changeOrgOwnership({
+          namespace: '',
+          newOwner: 'newOwner',
+        }),
+      );
+      await Promise.all(blockchainOperations);
+    });
+
+    it(`should be able to acquire lock if holder execution fails`, async () => {
+      domainsService.createOrganization.mockImplementation(failedBlockchainTx);
       const blockchainOperations = [];
       blockchainOperations.push(
         service.createOrganization({
