@@ -1,5 +1,6 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import AsyncLock = require('async-lock');
 import {
   ClaimsService,
   DomainsService,
@@ -11,11 +12,14 @@ import {
 } from 'iam-client-lib';
 import { Logger } from '../logger/logger.service';
 
+const blockchainTxLockKey = 'blockchainModification';
+
 @Injectable()
 export class IamService implements OnApplicationBootstrap {
   private domainsService: DomainsService;
   private claimService: ClaimsService;
   private signerService: SignerService;
+  private readonly blockchainTxLock: AsyncLock;
 
   constructor(
     private readonly configService: ConfigService,
@@ -32,6 +36,17 @@ export class IamService implements OnApplicationBootstrap {
     // Set RPC
     setChainConfig(voltaChainId, {
       rpcUrl: configService.get<string>('RPC_URL'),
+    });
+
+    // Timeout - max amount of time an item can remain in the queue before acquiring the lock
+    // Volta/EWC block times are about 5 seconds.
+    const blockchainTxQueueTimeoutMillis =
+      configService.get<number>('CHAIN_TX_QUEUE_TIMEOUT') ?? 30000;
+    this.logger.log(
+      `blockchain transaction queue timeout configured to ${blockchainTxQueueTimeoutMillis}`,
+    );
+    this.blockchainTxLock = new AsyncLock({
+      timeout: blockchainTxQueueTimeoutMillis,
     });
   }
 
@@ -69,13 +84,33 @@ export class IamService implements OnApplicationBootstrap {
   async createOrganization(
     ...params: Parameters<DomainsService['createOrganization']>
   ) {
-    return this.domainsService.createOrganization(params[0]);
+    const createOrgParams = params[0];
+    this.logger.log(`starting createOrg for org ${createOrgParams.namespace}`);
+    await this.blockchainTxLock.acquire(blockchainTxLockKey, async () => {
+      this.logger.log(
+        `acquired lock for createOrg for org ${createOrgParams.namespace}`,
+      );
+      await this.domainsService.createOrganization(params[0]);
+      this.logger.log(`created org ${createOrgParams.namespace}`);
+    });
   }
 
   async changeOrgOwnership(
     ...params: Parameters<DomainsService['changeOrgOwnership']>
   ) {
-    return this.domainsService.changeOrgOwnership(params[0]);
+    const changeOrgOwnerParams = params[0];
+    this.logger.log(
+      `starting changeOrgOwnership of org ${changeOrgOwnerParams.namespace} to owner ${changeOrgOwnerParams.newOwner}`,
+    );
+    await this.blockchainTxLock.acquire(blockchainTxLockKey, async () => {
+      this.logger.log(
+        `acquired lock for changeOrgOwnership of org ${changeOrgOwnerParams.namespace} to owner ${changeOrgOwnerParams.newOwner}`,
+      );
+      await this.domainsService.changeOrgOwnership(params[0]);
+      this.logger.log(
+        `changed OrgOwnership of org ${changeOrgOwnerParams.namespace} to owner ${changeOrgOwnerParams.newOwner}`,
+      );
+    });
   }
 
   async issueClaimRequest(

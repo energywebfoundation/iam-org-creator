@@ -11,4 +11,5 @@ RPC_URL:                                           <Volta RPC URL e.g https://vo
 PRIVATE_KEY:                                       <Private key required for connecting to iam-client-lib >
 ORG_NAMESPACE:                                     <Organisation namespace e.g iam.ewc>
 CACHE_SERVER_URL:                                  <Cache Server URL used by iam-client-lib to retrieve info e.g https://identitycache-dev.energyweb.org/>
+CHAIN_TX_QUEUE_TIMEOUT:                            <Timeout for a acquisition of lock for blockchain tx before tx fails/>
 ```
