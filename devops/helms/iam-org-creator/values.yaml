@@ -4,6 +4,10 @@
 
 replicaCount: 1
 
+service:
+  type: NodePort
+  port: 80
+
 iamOrgCreator:
   config:
     NESTJS_PORT: 9000
